@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +13,7 @@ serve(async (req) => {
 
   try {
     const { dream } = await req.json()
+    console.log('Analyzing dream:', dream)
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -22,7 +22,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -39,7 +39,14 @@ serve(async (req) => {
     })
 
     const data = await response.json()
+    console.log('OpenAI response:', data)
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from OpenAI')
+    }
+
     const result = data.choices[0].message.content
+    console.log('Parsed result:', result)
     
     // Parse the JSON string from the AI response
     const analysis = JSON.parse(result)

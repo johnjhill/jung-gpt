@@ -13,6 +13,18 @@ const Index = () => {
 
   const handleDreamSubmit = async (dream: string) => {
     try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: 'Error',
+          description: 'Please sign in to analyze dreams.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('analyze-dream', {
         body: { dream }
       });
@@ -23,15 +35,14 @@ const Index = () => {
       setAnalysis(data);
       setStep(2);
 
-      // Save dream to database
+      // Save dream to database with user_id
       const { error: dbError } = await supabase
         .from('dreams')
-        .insert([
-          { 
-            dream_content: dream,
-            analysis: JSON.stringify(data)
-          }
-        ]);
+        .insert({
+          dream_content: dream,
+          analysis: JSON.stringify(data),
+          user_id: user.id
+        });
 
       if (dbError) {
         console.error('Error saving dream:', dbError);
