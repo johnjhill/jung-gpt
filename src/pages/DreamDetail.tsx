@@ -40,10 +40,13 @@ const DreamDetail = () => {
       if (error) throw error;
       console.log('Fetched dream:', data);
       
-      return {
+      // Safely cast the analysis data
+      const dreamData = {
         ...data,
-        analysis: data.analysis as DreamAnalysis
+        analysis: data.analysis as DreamAnalysis | null
       } as DreamRecord;
+
+      return dreamData;
     },
   });
 
