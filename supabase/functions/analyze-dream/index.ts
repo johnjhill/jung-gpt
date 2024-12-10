@@ -18,6 +18,8 @@ serve(async (req) => {
       throw new Error('OpenAI API key is not configured')
     }
 
+    console.log('OpenAI API key found:', openAIApiKey.slice(0, 4) + '...')
+
     const { dream } = await req.json()
     console.log('Analyzing dream:', dream)
     
@@ -27,8 +29,6 @@ serve(async (req) => {
       Format your response as a JSON object with two fields:
       1. initialAnalysis: your initial interpretation
       2. questions: an array of 3 follow-up questions`
-
-    console.log('Making request to OpenAI with API key:', openAIApiKey.slice(0, 4) + '...')
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -45,7 +45,7 @@ serve(async (req) => {
         temperature: 0.7,
         max_tokens: 1000,
       }),
-    })
+    });
 
     if (!response.ok) {
       const errorData = await response.text()
