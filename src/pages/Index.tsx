@@ -46,7 +46,7 @@ const Index = () => {
       if (error) throw error;
       console.log('Received analysis:', response);
       
-      await supabase
+      const { error: updateError } = await supabase
         .from('dreams')
         .update({ 
           analysis: { 
@@ -55,6 +55,9 @@ const Index = () => {
           }
         })
         .eq('id', dreamRecord.id);
+        
+      if (updateError) throw updateError;
+      console.log('Saved initial analysis to database');
       
       setAnalysis(response);
       setStep(2);
@@ -83,11 +86,21 @@ const Index = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
+        // First, get the current dream record to preserve existing analysis
+        const { data: currentDream, error: fetchError } = await supabase
+          .from('dreams')
+          .select('analysis')
+          .eq('id', currentDreamId)
+          .single();
+          
+        if (fetchError) throw fetchError;
+        
+        // Update with all existing analysis data plus new fields
         const { error: updateError } = await supabase
           .from('dreams')
           .update({ 
             analysis: { 
-              ...analysis,
+              ...currentDream.analysis,
               answers,
               finalAnalysis: response.finalAnalysis
             }
@@ -125,11 +138,21 @@ const Index = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
+        // First, get the current dream record to preserve existing analysis
+        const { data: currentDream, error: fetchError } = await supabase
+          .from('dreams')
+          .select('analysis')
+          .eq('id', currentDreamId)
+          .single();
+          
+        if (fetchError) throw fetchError;
+        
+        // Update with all existing analysis data plus new fields
         const { error: updateError } = await supabase
           .from('dreams')
           .update({ 
             analysis: { 
-              ...analysis,
+              ...currentDream.analysis,
               skipped: true,
               finalAnalysis: response.finalAnalysis
             }
