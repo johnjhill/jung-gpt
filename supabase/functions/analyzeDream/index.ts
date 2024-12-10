@@ -1,6 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@4.16.1";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { Configuration, OpenAIApi } from 'https://esm.sh/openai@4.16.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,19 +8,16 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    console.log('Received request to analyzeDream function');
     const openai = new OpenAIApi(new Configuration({
       apiKey: Deno.env.get('OPENAI_API_KEY'),
     }));
 
     const { dreamContent, previousAnalysis, userAnswers, skipQuestions } = await req.json();
-    console.log('Request payload:', { dreamContent, previousAnalysis, skipQuestions });
 
     let prompt;
     if (!previousAnalysis) {
@@ -56,7 +52,7 @@ serve(async (req) => {
     console.log('Sending prompt to OpenAI:', prompt);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [
         { 
           role: "system", 
@@ -89,10 +85,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify(response), {
-      headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'application/json' 
-      },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in analyzeDream function:', error);
