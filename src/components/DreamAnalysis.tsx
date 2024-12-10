@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 
@@ -10,7 +11,15 @@ interface DreamAnalysisProps {
 }
 
 export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
+  const [answers, setAnswers] = useState<string[]>(Array(3).fill(''));
+
   if (!analysis) return null;
+
+  const handleSubmit = () => {
+    if (answers.every(answer => answer.trim())) {
+      onAnswer(answers);
+    }
+  };
 
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg animate-fadeIn">
@@ -29,6 +38,12 @@ export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
                 className="w-full p-2 border rounded-md"
                 rows={3}
                 placeholder="Your response..."
+                value={answers[index]}
+                onChange={(e) => {
+                  const newAnswers = [...answers];
+                  newAnswers[index] = e.target.value;
+                  setAnswers(newAnswers);
+                }}
               />
             </div>
           ))}
@@ -36,8 +51,9 @@ export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
       </div>
 
       <Button 
-        onClick={() => onAnswer([])} 
-        className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white"
+        onClick={handleSubmit}
+        disabled={!answers.every(answer => answer.trim())}
+        className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white disabled:opacity-50"
       >
         Continue Analysis
       </Button>

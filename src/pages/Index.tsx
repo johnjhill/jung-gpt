@@ -3,6 +3,7 @@ import { DreamEditor } from '../components/DreamEditor';
 import { DreamAnalysis } from '../components/DreamAnalysis';
 import { FinalAnalysis } from '../components/FinalAnalysis';
 import { useToast } from '../hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [step, setStep] = useState(1);
@@ -11,22 +12,73 @@ const Index = () => {
   const { toast } = useToast();
 
   const handleDreamSubmit = async (dream: string) => {
-    // Mockup analysis for now - will be replaced with actual API call
-    setAnalysis({
-      initialAnalysis: "Your dream appears to contain several archetypal elements that Jung would find significant. The presence of [key symbols] suggests a connection to the collective unconscious...",
-      questions: [
-        "How did you feel about [symbol] in your dream?",
-        "What personal associations do you have with [location]?",
-        "Does this dream remind you of any past experiences?"
-      ]
-    });
-    setStep(2);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-dream', {
+        body: { dream }
+      });
+
+      if (error) throw error;
+
+      console.log('Dream analysis response:', data);
+      setAnalysis(data);
+      setStep(2);
+
+      // Save dream to database
+      const { error: dbError } = await supabase
+        .from('dreams')
+        .insert([
+          { 
+            dream_content: dream,
+            analysis: JSON.stringify(data)
+          }
+        ]);
+
+      if (dbError) {
+        console.error('Error saving dream:', dbError);
+        toast({
+          title: 'Error',
+          description: 'Failed to save your dream. Please try again.',
+          variant: 'destructive',
+        });
+      }
+
+    } catch (error) {
+      console.error('Error analyzing dream:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to analyze your dream. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleAnswerSubmit = async (answers: string[]) => {
-    // Mockup final analysis - will be replaced with actual API call
-    setFinalAnalysis("Based on your responses and the initial dream content, this dream appears to be working through important aspects of your individuation process...");
-    setStep(3);
+    try {
+      // Combine the initial analysis and answers for final analysis
+      const prompt = `Based on the initial dream analysis: "${analysis?.initialAnalysis}" 
+        and the dreamer's responses to follow-up questions:
+        ${analysis?.questions.map((q, i) => `Q: ${q}\nA: ${answers[i]}`).join('\n')}
+        
+        Please provide a final, comprehensive analysis of the dream's meaning and significance.`;
+
+      const { data, error } = await supabase.functions.invoke('analyze-dream', {
+        body: { dream: prompt }
+      });
+
+      if (error) throw error;
+
+      const finalAnalysisText = data.initialAnalysis; // Use the initial analysis field for the final response
+      setFinalAnalysis(finalAnalysisText);
+      setStep(3);
+
+    } catch (error) {
+      console.error('Error generating final analysis:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate final analysis. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
