@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { History } from 'lucide-react';
+import { saveDreamWithInitialAnalysis, updateDreamWithFinalAnalysis } from '@/services/dreamAnalysis';
 
 const Index = () => {
   const [step, setStep] = useState(1);
@@ -27,18 +28,6 @@ const Index = () => {
         throw new Error('User not authenticated');
       }
 
-      const { data: dreamRecord, error: saveError } = await supabase
-        .from('dreams')
-        .insert({
-          dream_content: dream,
-          user_id: user.id
-        })
-        .select()
-        .single();
-
-      if (saveError) throw saveError;
-      setCurrentDreamId(dreamRecord.id);
-      
       const { data: response, error } = await supabase.functions.invoke('analyzeDream', {
         body: { dreamContent: dream }
       });
@@ -46,19 +35,8 @@ const Index = () => {
       if (error) throw error;
       console.log('Received analysis:', response);
       
-      const { error: updateError } = await supabase
-        .from('dreams')
-        .update({ 
-          analysis: { 
-            initialAnalysis: response.initialAnalysis,
-            questions: response.questions
-          }
-        })
-        .eq('id', dreamRecord.id);
-        
-      if (updateError) throw updateError;
-      console.log('Saved initial analysis to database');
-      
+      const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, response);
+      setCurrentDreamId(dreamRecord.id);
       setAnalysis(response);
       setStep(2);
     } catch (error) {
@@ -86,29 +64,7 @@ const Index = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
-        // First, get the current dream record to preserve existing analysis
-        const { data: currentDream, error: fetchError } = await supabase
-          .from('dreams')
-          .select('analysis')
-          .eq('id', currentDreamId)
-          .single();
-          
-        if (fetchError) throw fetchError;
-        
-        // Update with all existing analysis data plus new fields
-        const { error: updateError } = await supabase
-          .from('dreams')
-          .update({ 
-            analysis: { 
-              ...currentDream.analysis,
-              answers,
-              finalAnalysis: response.finalAnalysis
-            }
-          })
-          .eq('id', currentDreamId);
-          
-        if (updateError) throw updateError;
-        console.log('Saved final analysis to database');
+        await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, answers);
       }
       
       setFinalAnalysis(response.finalAnalysis);
@@ -138,29 +94,7 @@ const Index = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
-        // First, get the current dream record to preserve existing analysis
-        const { data: currentDream, error: fetchError } = await supabase
-          .from('dreams')
-          .select('analysis')
-          .eq('id', currentDreamId)
-          .single();
-          
-        if (fetchError) throw fetchError;
-        
-        // Update with all existing analysis data plus new fields
-        const { error: updateError } = await supabase
-          .from('dreams')
-          .update({ 
-            analysis: { 
-              ...currentDream.analysis,
-              skipped: true,
-              finalAnalysis: response.finalAnalysis
-            }
-          })
-          .eq('id', currentDreamId);
-          
-        if (updateError) throw updateError;
-        console.log('Saved final analysis to database');
+        await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
       }
       
       setFinalAnalysis(response.finalAnalysis);
