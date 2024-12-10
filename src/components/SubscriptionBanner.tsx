@@ -27,13 +27,13 @@ export const SubscriptionBanner = ({
         throw error;
       }
 
-      if (response?.url) {
-        console.log('Redirecting to checkout:', response.url);
-        window.location.href = response.url;
-      } else {
+      if (!response?.url) {
         console.error('No URL in response:', response);
         throw new Error('No checkout URL received');
       }
+
+      console.log('Redirecting to checkout:', response.url);
+      window.location.href = response.url;
     } catch (error) {
       console.error('Error creating checkout session:', error);
       toast({
