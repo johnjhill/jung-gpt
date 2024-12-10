@@ -47,8 +47,9 @@ export const SubscriptionBanner = ({
       }
 
       console.log('Redirecting to checkout:', response.url);
-      // Use window.location.href for a full page redirect
-      window.location.href = response.url;
+      
+      // Force a full page reload and redirect
+      window.location.replace(response.url);
       
     } catch (error) {
       console.error('Error in checkout process:', error);
