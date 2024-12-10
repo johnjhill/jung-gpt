@@ -1,0 +1,62 @@
+import { Card } from '@/components/ui/card';
+import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import DreamCardButtons from './DreamCardButtons';
+
+interface DreamAnalysis {
+  initialAnalysis: string;
+  questions: string[];
+  answers?: string[];
+  finalAnalysis?: string;
+}
+
+interface DreamCardProps {
+  dream: {
+    id: string;
+    dream_content: string;
+    analysis: DreamAnalysis | null;
+    created_at: string;
+  };
+  loadingDreamId: string | null;
+  handleViewAnalysis: (dreamId: string) => Promise<void>;
+}
+
+const DreamCard = ({ dream, loadingDreamId, handleViewAnalysis }: DreamCardProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <Card 
+      key={dream.id} 
+      className="p-6 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all cursor-pointer"
+      onClick={() => navigate(`/dream/${dream.id}`)}
+    >
+      <div className="mb-4">
+        <p className="text-sm text-gray-500">
+          {format(new Date(dream.created_at), 'MMMM d, yyyy')}
+        </p>
+      </div>
+      <div className="prose prose-sm">
+        <h3 className="text-xl font-serif mb-4 text-gray-900">Dream</h3>
+        <p className="text-gray-700 mb-4">{dream.dream_content}</p>
+        
+        {dream.analysis && (
+          <div className="mt-4">
+            <h4 className="text-lg font-serif mb-2 text-gray-900">Initial Analysis</h4>
+            <p className="text-gray-700 mb-4">
+              {dream.analysis.initialAnalysis}
+            </p>
+            
+            <DreamCardButtons 
+              dreamId={dream.id}
+              hasFinalAnalysis={!!dream.analysis.finalAnalysis}
+              loadingDreamId={loadingDreamId}
+              handleViewAnalysis={handleViewAnalysis}
+            />
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
+
+export default DreamCard;

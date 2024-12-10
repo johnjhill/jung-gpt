@@ -1,13 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { format } from 'date-fns';
-import { Loader2, ArrowRight, BookOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-
-type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+import DreamCard from '@/components/DreamCard';
 
 interface DreamAnalysis {
   initialAnalysis: string;
@@ -27,7 +22,6 @@ interface DreamRecord {
 }
 
 const DreamHistory = () => {
-  const navigate = useNavigate();
   const [loadingDreamId, setLoadingDreamId] = useState<string | null>(null);
   
   const { data: dreams, isLoading } = useQuery({
@@ -53,7 +47,7 @@ const DreamHistory = () => {
     setLoadingDreamId(dreamId);
     try {
       await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
-      navigate(`/dream/${dreamId}#final`);
+      window.location.href = `/dream/${dreamId}#final`;
     } finally {
       setLoadingDreamId(null);
     }
@@ -75,80 +69,12 @@ const DreamHistory = () => {
       
       <div className="space-y-8">
         {dreams?.map((dream) => (
-          <Card 
-            key={dream.id} 
-            className="p-6 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all cursor-pointer"
-            onClick={() => navigate(`/dream/${dream.id}`)}
-          >
-            <div className="mb-4">
-              <p className="text-sm text-gray-500">
-                {format(new Date(dream.created_at), 'MMMM d, yyyy')}
-              </p>
-            </div>
-            <div className="prose prose-sm">
-              <h3 className="text-xl font-serif mb-4 text-gray-900">Dream</h3>
-              <p className="text-gray-700 mb-4">{dream.dream_content}</p>
-              
-              {dream.analysis && (
-                <div className="mt-4">
-                  <h4 className="text-lg font-serif mb-2 text-gray-900">Initial Analysis</h4>
-                  <p className="text-gray-700 mb-4">
-                    {dream.analysis.initialAnalysis}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-4 mt-6" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/dream/${dream.id}`);
-                      }}
-                      variant="default"
-                      className="bg-dream-purple hover:bg-dream-purple/90 text-white"
-                    >
-                      <ArrowRight className="mr-2 h-4 w-4" />
-                      View Full Analysis
-                    </Button>
-                    
-                    {dream.analysis.finalAnalysis && (
-                      <>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewAnalysis(dream.id);
-                          }}
-                          variant="outline"
-                          disabled={loadingDreamId === dream.id}
-                          className="border-dream-purple text-dream-purple hover:bg-dream-purple/10"
-                        >
-                          {loadingDreamId === dream.id ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Loading...
-                            </>
-                          ) : (
-                            <>
-                              <BookOpen className="mr-2 h-4 w-4" />
-                              See Final Analysis
-                            </>
-                          )}
-                        </Button>
-                        
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/dream/${dream.id}#final`);
-                          }}
-                          className="bg-blue-500 hover:bg-blue-600 text-white"
-                        >
-                          Final Analysis
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
+          <DreamCard
+            key={dream.id}
+            dream={dream}
+            loadingDreamId={loadingDreamId}
+            handleViewAnalysis={handleViewAnalysis}
+          />
         ))}
       </div>
     </div>
