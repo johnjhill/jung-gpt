@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
 
 interface DreamAnalysisProps {
   analysis: {
@@ -10,7 +12,22 @@ interface DreamAnalysisProps {
 }
 
 export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
+  const [answers, setAnswers] = useState<string[]>(Array(3).fill(''));
+
   if (!analysis) return null;
+
+  const handleAnswerChange = (index: number, value: string) => {
+    const newAnswers = [...answers];
+    newAnswers[index] = value;
+    setAnswers(newAnswers);
+  };
+
+  const handleSubmit = () => {
+    if (answers.some(answer => !answer.trim())) {
+      return; // Don't submit if any answer is empty
+    }
+    onAnswer(answers);
+  };
 
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg animate-fadeIn">
@@ -25,10 +42,11 @@ export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
           {analysis.questions.map((question, index) => (
             <div key={index} className="p-4 bg-dream-lavender/50 rounded-lg">
               <p className="text-gray-800 mb-2">{question}</p>
-              <textarea 
-                className="w-full p-2 border rounded-md"
-                rows={3}
+              <Textarea 
+                value={answers[index]}
+                onChange={(e) => handleAnswerChange(index, e.target.value)}
                 placeholder="Your response..."
+                className="w-full"
               />
             </div>
           ))}
@@ -36,8 +54,9 @@ export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
       </div>
 
       <Button 
-        onClick={() => onAnswer([])} 
+        onClick={handleSubmit} 
         className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white"
+        disabled={answers.some(answer => !answer.trim())}
       >
         Continue Analysis
       </Button>
