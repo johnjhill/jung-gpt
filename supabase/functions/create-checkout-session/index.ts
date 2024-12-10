@@ -22,6 +22,8 @@ serve(async (req) => {
     // Get the session or user object
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
+    console.log('Authenticating user with token:', token.substring(0, 10) + '...');
+    
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     const email = user?.email;
@@ -29,6 +31,8 @@ serve(async (req) => {
     if (!email) {
       throw new Error('No email found');
     }
+
+    console.log('Creating checkout session for email:', email);
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
@@ -42,6 +46,7 @@ serve(async (req) => {
     let customer_id = undefined;
     if (customers.data.length > 0) {
       customer_id = customers.data[0].id;
+      console.log('Found existing customer:', customer_id);
       // check if already subscribed
       const subscriptions = await stripe.subscriptions.list({
         customer: customers.data[0].id,
