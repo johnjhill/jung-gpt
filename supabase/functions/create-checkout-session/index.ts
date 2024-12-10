@@ -13,18 +13,31 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting checkout session creation...');
+    
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('Missing authorization header');
+      throw new Error('Missing authorization header');
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
 
     // Get user data
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
 
     if (userError || !user?.email) {
       console.error('Auth error:', userError);
       throw new Error('Authentication failed');
     }
+
+    console.log('User authenticated:', user.email);
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
       apiVersion: '2023-10-16',
@@ -42,7 +55,7 @@ serve(async (req) => {
 
     let customerId = customers.data[0]?.id;
 
-    // Create checkout session
+    console.log('Creating checkout session...');
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -56,6 +69,8 @@ serve(async (req) => {
       success_url: `${origin}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
     });
+
+    console.log('Checkout session created:', session.id);
 
     return new Response(
       JSON.stringify({ url: session.url }),
@@ -73,7 +88,7 @@ serve(async (req) => {
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       }
     );
   }

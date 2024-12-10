@@ -17,15 +17,28 @@ export const SubscriptionBanner = ({
   const handleUpgradeClick = async () => {
     setIsLoading(true);
     try {
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Starting checkout process...');
       
+      // Get a fresh session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw new Error('Failed to get session');
+      }
+
       if (!session) {
+        console.error('No active session found');
         throw new Error('Please log in to upgrade');
       }
 
+      console.log('Creating checkout session...');
+      
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { returnUrl: window.location.origin },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) {
@@ -34,11 +47,12 @@ export const SubscriptionBanner = ({
       }
 
       if (!data?.url) {
+        console.error('Invalid response:', data);
         throw new Error('Invalid response from server');
       }
 
-      // Redirect to Stripe checkout
-      window.location.replace(data.url);
+      console.log('Redirecting to checkout URL:', data.url);
+      window.location.assign(data.url);
       
     } catch (error) {
       console.error('Error in checkout process:', error);
