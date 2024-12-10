@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { Loader2 } from 'lucide-react';
 
 interface DreamAnalysisProps {
   analysis: {
@@ -13,6 +14,7 @@ interface DreamAnalysisProps {
 
 export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
   const [answers, setAnswers] = useState<string[]>(Array(3).fill(''));
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!analysis) return null;
 
@@ -22,11 +24,16 @@ export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
     setAnswers(newAnswers);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (answers.some(answer => !answer.trim())) {
-      return; // Don't submit if any answer is empty
+      return;
     }
-    onAnswer(answers);
+    setIsProcessing(true);
+    try {
+      await onAnswer(answers);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -56,9 +63,16 @@ export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
       <Button 
         onClick={handleSubmit} 
         className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white"
-        disabled={answers.some(answer => !answer.trim())}
+        disabled={answers.some(answer => !answer.trim()) || isProcessing}
       >
-        Continue Analysis
+        {isProcessing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          'Continue Analysis'
+        )}
       </Button>
     </Card>
   );
