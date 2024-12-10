@@ -4,16 +4,23 @@ import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 
+type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+interface DreamAnalysis {
+  initialAnalysis: string;
+  questions: string[];
+  answers?: string[];
+  finalAnalysis?: string;
+}
+
 interface DreamRecord {
   id: string;
   dream_content: string;
   dream_date: string;
-  analysis: {
-    initialAnalysis: string;
-    questions: string[];
-    answers?: string[];
-    finalAnalysis?: string;
-  } | null;
+  analysis: DreamAnalysis | null;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
 }
 
 const DreamHistory = () => {
@@ -24,11 +31,16 @@ const DreamHistory = () => {
       const { data, error } = await supabase
         .from('dreams')
         .select('*')
-        .order('dream_date', { ascending: false });
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       console.log('Fetched dreams:', data);
-      return data as DreamRecord[];
+      
+      // Transform the data to ensure analysis is properly typed
+      return (data as any[]).map(dream => ({
+        ...dream,
+        analysis: dream.analysis as DreamAnalysis
+      })) as DreamRecord[];
     },
   });
 
@@ -51,7 +63,7 @@ const DreamHistory = () => {
           <Card key={dream.id} className="p-6 bg-white/80 backdrop-blur-sm shadow-lg">
             <div className="mb-4">
               <p className="text-sm text-gray-500">
-                {format(new Date(dream.dream_date), 'MMMM d, yyyy')}
+                {format(new Date(dream.created_at), 'MMMM d, yyyy')}
               </p>
             </div>
             <div className="prose prose-sm">
