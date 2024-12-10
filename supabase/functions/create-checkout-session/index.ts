@@ -8,44 +8,31 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
-
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
 
     // Get user data
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
-    if (userError || !user) {
+    if (userError || !user?.email) {
       console.error('Auth error:', userError);
       throw new Error('Authentication failed');
     }
 
-    console.log('Creating checkout for user:', user.email);
-
-    // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
       apiVersion: '2023-10-16',
     });
 
     // Get request body
     const { returnUrl } = await req.json();
-    const origin = returnUrl || 'http://localhost:5173';
+    const origin = returnUrl || req.headers.get('origin') || 'http://localhost:5173';
 
     // Check if customer exists
     const customers = await stripe.customers.list({
@@ -54,19 +41,6 @@ serve(async (req) => {
     });
 
     let customerId = customers.data[0]?.id;
-
-    // If customer exists, check if they're already subscribed
-    if (customerId) {
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: 'active',
-        limit: 1,
-      });
-
-      if (subscriptions.data.length > 0) {
-        throw new Error('You already have an active subscription');
-      }
-    }
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
@@ -83,8 +57,6 @@ serve(async (req) => {
       cancel_url: `${origin}`,
     });
 
-    console.log('Checkout session created:', session.id);
-
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
@@ -94,7 +66,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Checkout error:', error);
+    console.error('Error creating checkout session:', error);
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Internal server error'
