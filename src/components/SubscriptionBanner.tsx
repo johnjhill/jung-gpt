@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
 
 export const SubscriptionBanner = ({ 
   subscriptionTier, 
@@ -12,56 +10,25 @@ export const SubscriptionBanner = ({
   monthlyDreamCount?: number;
 }) => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleUpgradeClick = async () => {
-    setIsLoading(true);
     try {
-      console.log('Starting checkout process...');
-      
-      // Get a fresh session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        throw new Error('Failed to get session');
-      }
-
-      if (!session) {
-        console.error('No active session found');
-        throw new Error('Please log in to upgrade');
-      }
-
-      console.log('Creating checkout session...');
-      
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { returnUrl: window.location.origin },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+      const { data: response, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {}
       });
 
-      if (error) {
-        console.error('Checkout error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      if (!data?.url) {
-        console.error('Invalid response:', data);
-        throw new Error('Invalid response from server');
+      if (response.url) {
+        window.location.href = response.url;
       }
-
-      console.log('Redirecting to checkout URL:', data.url);
-      window.location.assign(data.url);
-      
     } catch (error) {
-      console.error('Error in checkout process:', error);
+      console.error('Error creating checkout session:', error);
       toast({
-        title: "Checkout Error",
-        description: error instanceof Error ? error.message : "Failed to start checkout process",
+        title: "Error",
+        description: "Failed to start upgrade process. Please try again.",
         variant: "destructive",
       });
-      setIsLoading(false);
     }
   };
 
@@ -79,16 +46,8 @@ export const SubscriptionBanner = ({
         <Button 
           onClick={handleUpgradeClick}
           className="mt-3 bg-dream-purple hover:bg-dream-purple/90"
-          disabled={isLoading}
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating checkout...
-            </>
-          ) : (
-            'Upgrade to Premium'
-          )}
+          Upgrade to Premium
         </Button>
       </div>
     </div>
