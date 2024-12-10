@@ -40,7 +40,6 @@ const DreamDetail = () => {
       if (error) throw error;
       console.log('Fetched dream:', data);
       
-      // First cast to unknown, then to DreamAnalysis to satisfy TypeScript
       const analysis = data.analysis ? (data.analysis as unknown as DreamAnalysis) : null;
       
       const dreamData: DreamRecord = {
@@ -96,25 +95,27 @@ const DreamDetail = () => {
 
           {dream.analysis && (
             <>
-              <h3 className="text-2xl font-serif text-dream-purple mb-4">Initial Analysis</h3>
-              <p className="text-gray-700 mb-8">{dream.analysis.initialAnalysis}</p>
-
-              {dream.analysis.questions && dream.analysis.answers && (
-                <div className="mb-8">
-                  <h3 className="text-2xl font-serif text-dream-purple mb-4">Follow-up Questions</h3>
-                  {dream.analysis.questions.map((question, index) => (
-                    <div key={index} className="mb-6">
-                      <p className="font-medium text-dream-purple mb-2">Q: {question}</p>
-                      <p className="text-gray-700">A: {dream.analysis.answers?.[index] || 'No answer provided'}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {dream.analysis.finalAnalysis && (
+              {dream.analysis.finalAnalysis ? (
                 <>
                   <h3 className="text-2xl font-serif text-dream-purple mb-4">Final Analysis</h3>
-                  <p className="text-gray-700">{dream.analysis.finalAnalysis}</p>
+                  <p className="text-gray-700 mb-8">{dream.analysis.finalAnalysis}</p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-serif text-dream-purple mb-4">Initial Analysis</h3>
+                  <p className="text-gray-700 mb-8">{dream.analysis.initialAnalysis}</p>
+
+                  {dream.analysis.questions && dream.analysis.answers && (
+                    <div className="mb-8">
+                      <h3 className="text-2xl font-serif text-dream-purple mb-4">Follow-up Questions</h3>
+                      {dream.analysis.questions.map((question, index) => (
+                        <div key={index} className="mb-6">
+                          <p className="font-medium text-dream-purple mb-2">Q: {question}</p>
+                          <p className="text-gray-700">A: {dream.analysis.answers?.[index] || 'No answer provided'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </>
               )}
             </>
