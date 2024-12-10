@@ -19,41 +19,23 @@ const Index = () => {
       if (userError || !user) {
         toast({
           title: 'Error',
-          description: 'Please sign in to analyze dreams.',
+          description: 'Please sign in to save dreams.',
           variant: 'destructive',
         });
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('analyze-dream', {
-        body: { dream }
-      });
+      // Create a simple placeholder analysis
+      const placeholderAnalysis = {
+        initialAnalysis: "Dream recording saved successfully. The AI analysis feature is currently disabled.",
+        questions: [
+          "How did you feel during this dream?",
+          "What do you think triggered this dream?",
+          "Did any symbols or elements in the dream feel particularly significant to you?"
+        ]
+      };
 
-      if (error) {
-        console.error('Dream analysis error:', error);
-        
-        // Check if it's the service unavailable error
-        if (error.status === 503) {
-          toast({
-            title: 'Service Unavailable',
-            description: 'The dream analysis service is temporarily unavailable. Please try again later.',
-            variant: 'destructive',
-            duration: 5000,
-          });
-          return;
-        }
-
-        // Handle other errors
-        toast({
-          title: 'Error',
-          description: 'Failed to analyze your dream. Please try again.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      console.log('Dream analysis response:', data);
-      setAnalysis(data);
+      setAnalysis(placeholderAnalysis);
       setStep(2);
 
       // Save dream to database with user_id
@@ -61,7 +43,7 @@ const Index = () => {
         .from('dreams')
         .insert({
           dream_content: dream,
-          analysis: data,
+          analysis: placeholderAnalysis,
           user_id: user.id
         });
 
@@ -75,10 +57,10 @@ const Index = () => {
       }
 
     } catch (error) {
-      console.error('Error analyzing dream:', error);
+      console.error('Error saving dream:', error);
       toast({
         title: 'Error',
-        description: 'Failed to analyze your dream. Please try again.',
+        description: 'Failed to save your dream. Please try again.',
         variant: 'destructive',
       });
     }
@@ -86,41 +68,16 @@ const Index = () => {
 
   const handleAnswerSubmit = async (answers: string[]) => {
     try {
-      // Combine the initial analysis and answers for final analysis
-      const prompt = `Based on the initial dream analysis: "${analysis?.initialAnalysis}" 
-        and the dreamer's responses to follow-up questions:
-        ${analysis?.questions.map((q, i) => `Q: ${q}\nA: ${answers[i]}`).join('\n')}
-        
-        Please provide a final, comprehensive analysis of the dream's meaning and significance.`;
-
-      const { data, error } = await supabase.functions.invoke('analyze-dream', {
-        body: { dream: prompt }
-      });
-
-      if (error) {
-        // Check if it's the service unavailable error
-        if (error.status === 503) {
-          toast({
-            title: 'Service Unavailable',
-            description: 'The dream analysis service is temporarily unavailable. Please try again later.',
-            variant: 'destructive',
-            duration: 5000,
-          });
-          return;
-        }
-
-        throw error;
-      }
-
-      const finalAnalysisText = data.initialAnalysis; // Use the initial analysis field for the final response
+      // Create a simple placeholder final analysis
+      const finalAnalysisText = "Thank you for reflecting on your dream. Your responses have been saved. The AI analysis feature is currently disabled.";
       setFinalAnalysis(finalAnalysisText);
       setStep(3);
 
     } catch (error) {
-      console.error('Error generating final analysis:', error);
+      console.error('Error processing answers:', error);
       toast({
         title: 'Error',
-        description: 'Failed to generate final analysis. Please try again.',
+        description: 'Failed to process your responses. Please try again.',
         variant: 'destructive',
       });
     }
