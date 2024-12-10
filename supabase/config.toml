@@ -30,3 +30,11 @@ port = 54327
 [[functions]]
 name = "analyzeDream"
 verify_jwt = false
+
+[[functions]]
+name = "generateDreamSummary"
+verify_jwt = false
+
+[[functions]]
+name = "create-checkout-session"
+verify_jwt = false
