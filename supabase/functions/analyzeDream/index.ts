@@ -8,16 +8,26 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    console.log('Received request to analyzeDream function');
+    
     const openai = new OpenAIApi(new Configuration({
       apiKey: Deno.env.get('OPENAI_API_KEY'),
     }));
 
-    const { dreamContent, previousAnalysis, userAnswers, skipQuestions } = await req.json();
+    const requestData = await req.json();
+    console.log('Request data:', requestData);
+
+    const { dreamContent, previousAnalysis, userAnswers, skipQuestions } = requestData;
+
+    if (!dreamContent && !previousAnalysis) {
+      throw new Error('Either dreamContent or previousAnalysis must be provided');
+    }
 
     let prompt;
     if (!previousAnalysis) {
@@ -85,7 +95,10 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify(response), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json' 
+      },
     });
   } catch (error) {
     console.error('Error in analyzeDream function:', error);
