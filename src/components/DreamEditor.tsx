@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { Loader2 } from 'lucide-react';
 
 interface DreamEditorProps {
   onSubmit: (content: string) => void;
 }
 
 export const DreamEditor = ({ onSubmit }: DreamEditorProps) => {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
   const editor = useEditor({
     extensions: [StarterKit],
     content: '',
@@ -18,9 +22,14 @@ export const DreamEditor = ({ onSubmit }: DreamEditorProps) => {
     },
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (editor && editor.getText().trim()) {
-      onSubmit(editor.getText());
+      setIsAnalyzing(true);
+      try {
+        await onSubmit(editor.getText());
+      } finally {
+        setIsAnalyzing(false);
+      }
     }
   };
 
@@ -36,8 +45,16 @@ export const DreamEditor = ({ onSubmit }: DreamEditorProps) => {
       <Button 
         onClick={handleSubmit}
         className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white"
+        disabled={isAnalyzing}
       >
-        Analyze Dream
+        {isAnalyzing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Analyzing Dream...
+          </>
+        ) : (
+          'Analyze Dream'
+        )}
       </Button>
     </Card>
   );
