@@ -4,16 +4,30 @@ import { DreamAnalysis } from '../components/DreamAnalysis';
 import { FinalAnalysis } from '../components/FinalAnalysis';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { History } from 'lucide-react';
 
 const Index = () => {
   const [step, setStep] = useState(1);
   const [analysis, setAnalysis] = useState<{ initialAnalysis: string; questions: string[] } | null>(null);
   const [finalAnalysis, setFinalAnalysis] = useState<string | null>(null);
+  const [currentDreamId, setCurrentDreamId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleDreamSubmit = async (dream: string) => {
     try {
       console.log('Submitting dream for analysis:', dream);
+      
+      // First save the dream
+      const { data: dreamRecord, error: saveError } = await supabase
+        .from('dreams')
+        .insert([{ dream_content: dream }])
+        .select()
+        .single();
+
+      if (saveError) throw saveError;
+      setCurrentDreamId(dreamRecord.id);
       
       const { data: response, error } = await supabase.functions.invoke('analyzeDream', {
         body: { dreamContent: dream }
@@ -21,6 +35,17 @@ const Index = () => {
 
       if (error) throw error;
       console.log('Received analysis:', response);
+      
+      // Update the dream record with initial analysis
+      await supabase
+        .from('dreams')
+        .update({ 
+          analysis: { 
+            initialAnalysis: response.initialAnalysis,
+            questions: response.questions
+          }
+        })
+        .eq('id', dreamRecord.id);
       
       setAnalysis(response);
       setStep(2);
@@ -48,6 +73,20 @@ const Index = () => {
       if (error) throw error;
       console.log('Received final analysis:', response);
       
+      // Update the dream record with final analysis
+      if (currentDreamId) {
+        await supabase
+          .from('dreams')
+          .update({ 
+            analysis: { 
+              ...analysis,
+              answers,
+              finalAnalysis: response.finalAnalysis
+            }
+          })
+          .eq('id', currentDreamId);
+      }
+      
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
     } catch (error) {
@@ -63,9 +102,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-dream-blue via-dream-purple to-dream-lavender">
       <div className="container max-w-4xl mx-auto py-12 px-4">
-        <h1 className="text-4xl md:text-5xl font-serif text-white text-center mb-12">
-          Dream Analysis Journal
-        </h1>
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-serif text-white">
+            Dream Analysis Journal
+          </h1>
+          <Link to="/history">
+            <Button variant="outline" className="gap-2">
+              <History className="h-4 w-4" />
+              History
+            </Button>
+          </Link>
+        </div>
         
         <div className="space-y-8">
           {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
