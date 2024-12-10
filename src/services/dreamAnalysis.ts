@@ -1,4 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+
+interface DreamAnalysis {
+  initialAnalysis: string;
+  questions: string[];
+  answers?: string[];
+  finalAnalysis?: string;
+  skipped?: boolean;
+}
 
 export const saveDreamWithInitialAnalysis = async (
   dreamContent: string,
@@ -7,12 +16,17 @@ export const saveDreamWithInitialAnalysis = async (
   summary: string
 ) => {
   console.log('Saving dream with initial analysis...');
+  const analysisJson: DreamAnalysis = {
+    initialAnalysis: analysis.initialAnalysis,
+    questions: analysis.questions
+  };
+
   const { data, error } = await supabase
     .from('dreams')
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysis as unknown as JSON,
+      analysis: analysisJson as Json,
       summary: summary
     })
     .select()
@@ -36,8 +50,8 @@ export const updateDreamWithFinalAnalysis = async (
     throw new Error('No analysis found for dream');
   }
 
-  const updatedAnalysis = {
-    ...currentAnalysis,
+  const updatedAnalysis: DreamAnalysis = {
+    ...currentAnalysis as unknown as DreamAnalysis,
     finalAnalysis,
     answers: answers || [],
     skipped: skipped || false
@@ -46,7 +60,7 @@ export const updateDreamWithFinalAnalysis = async (
   const { data, error } = await supabase
     .from('dreams')
     .update({
-      analysis: updatedAnalysis as unknown as JSON
+      analysis: updatedAnalysis as Json
     })
     .eq('id', dreamId)
     .select()
