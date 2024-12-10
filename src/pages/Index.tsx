@@ -5,6 +5,7 @@ import { FinalAnalysis } from '../components/FinalAnalysis';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { saveDreamWithInitialAnalysis, updateDreamWithFinalAnalysis } from '@/services/dreamAnalysis';
+import { UsageTracker } from '@/components/UsageTracker';
 
 const Index = () => {
   const [step, setStep] = useState(1);
@@ -137,6 +138,8 @@ const Index = () => {
       <h1 className="text-4xl md:text-5xl font-serif text-white mb-12 text-center">
         Dream Analysis Journal
       </h1>
+      
+      <UsageTracker />
       
       <div className="space-y-8">
         {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
