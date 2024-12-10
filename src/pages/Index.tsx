@@ -3,7 +3,6 @@ import { DreamEditor } from '../components/DreamEditor';
 import { DreamAnalysis } from '../components/DreamAnalysis';
 import { FinalAnalysis } from '../components/FinalAnalysis';
 import { useToast } from '../hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [step, setStep] = useState(1);
@@ -12,75 +11,22 @@ const Index = () => {
   const { toast } = useToast();
 
   const handleDreamSubmit = async (dream: string) => {
-    try {
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        toast({
-          title: 'Error',
-          description: 'Please sign in to save dreams.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      // Create a simple placeholder analysis
-      const placeholderAnalysis = {
-        initialAnalysis: "Dream recording saved successfully. The AI analysis feature is currently disabled.",
-        questions: [
-          "How did you feel during this dream?",
-          "What do you think triggered this dream?",
-          "Did any symbols or elements in the dream feel particularly significant to you?"
-        ]
-      };
-
-      setAnalysis(placeholderAnalysis);
-      setStep(2);
-
-      // Save dream to database with user_id
-      const { error: dbError } = await supabase
-        .from('dreams')
-        .insert({
-          dream_content: dream,
-          analysis: placeholderAnalysis,
-          user_id: user.id
-        });
-
-      if (dbError) {
-        console.error('Error saving dream:', dbError);
-        toast({
-          title: 'Error',
-          description: 'Failed to save your dream. Please try again.',
-          variant: 'destructive',
-        });
-      }
-
-    } catch (error) {
-      console.error('Error saving dream:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save your dream. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    // Mockup analysis for now - will be replaced with actual API call
+    setAnalysis({
+      initialAnalysis: "Your dream appears to contain several archetypal elements that Jung would find significant. The presence of [key symbols] suggests a connection to the collective unconscious...",
+      questions: [
+        "How did you feel about [symbol] in your dream?",
+        "What personal associations do you have with [location]?",
+        "Does this dream remind you of any past experiences?"
+      ]
+    });
+    setStep(2);
   };
 
   const handleAnswerSubmit = async (answers: string[]) => {
-    try {
-      // Create a simple placeholder final analysis
-      const finalAnalysisText = "Thank you for reflecting on your dream. Your responses have been saved. The AI analysis feature is currently disabled.";
-      setFinalAnalysis(finalAnalysisText);
-      setStep(3);
-
-    } catch (error) {
-      console.error('Error processing answers:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to process your responses. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    // Mockup final analysis - will be replaced with actual API call
+    setFinalAnalysis("Based on your responses and the initial dream content, this dream appears to be working through important aspects of your individuation process...");
+    setStep(3);
   };
 
   return (
