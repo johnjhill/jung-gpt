@@ -14,7 +14,9 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Generating dream summary...');
     const { dreamContent } = await req.json();
+    console.log('Dream content:', dreamContent);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -35,7 +37,9 @@ serve(async (req) => {
     });
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
     const summary = data.choices[0].message.content.trim();
+    console.log('Generated summary:', summary);
 
     return new Response(JSON.stringify({ summary }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

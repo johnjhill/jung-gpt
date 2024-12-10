@@ -19,6 +19,7 @@ interface DreamRecord {
   created_at: string;
   updated_at: string;
   user_id: string;
+  summary: string;
 }
 
 const DreamHistory = () => {

@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-interface DreamAnalysis {
+export interface DreamAnalysis {
   initialAnalysis: string;
   questions: string[];
   answers?: string[];
@@ -16,12 +16,17 @@ export const saveDreamWithInitialAnalysis = async (
 ) => {
   console.log('Saving dream with initial analysis:', { dreamContent, analysis, summary });
   
+  const analysisJson = {
+    initialAnalysis: analysis.initialAnalysis,
+    questions: analysis.questions
+  };
+
   const { data: dreamRecord, error: saveError } = await supabase
     .from('dreams')
     .insert({
       dream_content: dreamContent,
       user_id: userId,
-      analysis: analysis as DreamAnalysis,
+      analysis: analysisJson,
       summary: summary
     })
     .select()
@@ -50,9 +55,10 @@ export const updateDreamWithFinalAnalysis = async (
   if (fetchError) throw fetchError;
   console.log('Current dream data:', currentDream);
 
-  const updatedAnalysis: DreamAnalysis = {
-    initialAnalysis: currentDream.analysis?.initialAnalysis || '',
-    questions: currentDream.analysis?.questions || [],
+  const currentAnalysis = currentDream.analysis as DreamAnalysis;
+  const updatedAnalysis = {
+    initialAnalysis: currentAnalysis.initialAnalysis,
+    questions: currentAnalysis.questions,
     finalAnalysis,
     ...(answers ? { answers } : {}),
     ...(skipped ? { skipped } : {})
