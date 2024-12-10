@@ -82,12 +82,12 @@ const DreamHistory = () => {
               </p>
             </div>
             <div className="prose prose-sm">
-              <h3 className="text-xl font-serif text-dream-purple mb-4">Dream</h3>
+              <h3 className="text-xl font-serif mb-4">Dream</h3>
               <p className="text-gray-700 mb-4">{dream.dream_content}</p>
               
               {dream.analysis && (
                 <div className="mt-4">
-                  <h4 className="text-lg font-serif text-dream-purple mb-2">Initial Analysis</h4>
+                  <h4 className="text-lg font-serif mb-2">Initial Analysis</h4>
                   <p className="text-gray-700 mb-4">
                     {dream.analysis.initialAnalysis}
                   </p>
@@ -96,30 +96,38 @@ const DreamHistory = () => {
                     <Button
                       onClick={() => navigate(`/dream/${dream.id}`)}
                       variant="ghost"
-                      className="text-dream-purple hover:text-dream-purple/90 group"
+                      className="text-foreground hover:text-foreground/90 group"
                     >
                       <ArrowRight className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       View Full Analysis
                     </Button>
                     {dream.analysis.finalAnalysis && (
-                      <Button
-                        onClick={() => handleViewAnalysis(dream.id)}
-                        variant="outline"
-                        disabled={loadingDreamId === dream.id}
-                        className="text-dream-purple hover:text-dream-purple/90 transition-all duration-200 hover:scale-105 active:scale-95"
-                      >
-                        {loadingDreamId === dream.id ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Loading...
-                          </>
-                        ) : (
-                          <>
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            See Final Analysis
-                          </>
-                        )}
-                      </Button>
+                      <>
+                        <Button
+                          onClick={() => handleViewAnalysis(dream.id)}
+                          variant="outline"
+                          disabled={loadingDreamId === dream.id}
+                          className="text-foreground hover:text-foreground/90 transition-all duration-200 hover:scale-105 active:scale-95"
+                        >
+                          {loadingDreamId === dream.id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Loading...
+                            </>
+                          ) : (
+                            <>
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              See Final Analysis
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => navigate(`/dream/${dream.id}#final`)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white"
+                        >
+                          Final Analysis
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
