@@ -16,6 +16,7 @@ interface DreamAnalysisProps {
 export const DreamAnalysis = ({ analysis, onAnswer, onSkip }: DreamAnalysisProps) => {
   const [answers, setAnswers] = useState<string[]>(Array(3).fill(''));
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
 
   if (!analysis) return null;
 
@@ -37,6 +38,15 @@ export const DreamAnalysis = ({ analysis, onAnswer, onSkip }: DreamAnalysisProps
     }
   };
 
+  const handleSkip = async () => {
+    setIsSkipping(true);
+    try {
+      await onSkip();
+    } finally {
+      setIsSkipping(false);
+    }
+  };
+
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg animate-fadeIn">
       <div className="mb-6">
@@ -49,11 +59,21 @@ export const DreamAnalysis = ({ analysis, onAnswer, onSkip }: DreamAnalysisProps
           <h3 className="text-xl font-serif text-dream-purple">Exploring Deeper</h3>
           <Button 
             variant="outline" 
-            onClick={onSkip}
-            className="gap-2 text-dream-purple hover:text-dream-purple/90"
+            onClick={handleSkip}
+            disabled={isSkipping}
+            className="gap-2 text-dream-purple hover:text-dream-purple/90 transition-all duration-200 hover:scale-105 active:scale-95"
           >
-            <FastForward className="h-4 w-4" />
-            Skip to Final Analysis
+            {isSkipping ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Skipping...
+              </>
+            ) : (
+              <>
+                <FastForward className="h-4 w-4" />
+                Skip to Final Analysis
+              </>
+            )}
           </Button>
         </div>
         <div className="space-y-4">
