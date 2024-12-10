@@ -18,24 +18,38 @@ export const SubscriptionBanner = ({
     setIsLoading(true);
     try {
       console.log('Starting checkout process...');
-      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        throw new Error('No active session found');
+      // Get a fresh session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw new Error('Failed to get session');
       }
 
+      if (!session) {
+        console.error('No active session found');
+        throw new Error('Please log in to upgrade');
+      }
+
+      console.log('Got fresh session, creating checkout...');
+      
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {},
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+        body: { returnUrl: window.location.origin },
       });
 
-      if (error) throw error;
-      if (!data?.url) throw new Error('Invalid response from server');
+      if (error) {
+        console.error('Checkout error:', error);
+        throw error;
+      }
 
-      console.log('Received checkout URL:', data.url);
-      window.location.assign(data.url);
+      if (!data?.url) {
+        console.error('Invalid response:', data);
+        throw new Error('Invalid response from server');
+      }
+
+      console.log('Redirecting to checkout URL:', data.url);
+      window.location.href = data.url;
       
     } catch (error) {
       console.error('Error in checkout process:', error);

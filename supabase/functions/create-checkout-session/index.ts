@@ -8,35 +8,44 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Get user from auth header
+    // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header');
+      throw new Error('Missing authorization header');
     }
 
+    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
 
+    // Get user data
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
 
-    if (userError || !user?.email) {
+    if (userError || !user) {
+      console.error('Auth error:', userError);
       throw new Error('Authentication failed');
     }
 
     console.log('Creating checkout for user:', user.email);
 
+    // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
       apiVersion: '2023-10-16',
     });
+
+    // Get request body
+    const { returnUrl } = await req.json();
+    const origin = returnUrl || 'http://localhost:5173';
 
     // Check if customer exists
     const customers = await stripe.customers.list({
@@ -70,8 +79,8 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/`,
-      cancel_url: `${req.headers.get('origin')}/`,
+      success_url: `${origin}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}`,
     });
 
     console.log('Checkout session created:', session.id);
