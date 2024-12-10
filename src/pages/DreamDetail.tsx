@@ -24,12 +24,14 @@ interface DreamRecord {
 }
 
 const DreamDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const { data: dream, isLoading } = useQuery({
     queryKey: ['dream', id],
     queryFn: async () => {
+      if (!id) throw new Error('Dream ID is required');
+      
       console.log('Fetching dream details for id:', id);
       const { data, error } = await supabase
         .from('dreams')
@@ -37,7 +39,11 @@ const DreamDetail = () => {
         .eq('id', id)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching dream:', error);
+        throw error;
+      }
+      
       console.log('Fetched dream:', data);
       
       // First cast to unknown, then to DreamAnalysis to satisfy TypeScript
@@ -50,6 +56,7 @@ const DreamDetail = () => {
 
       return dreamData;
     },
+    enabled: !!id, // Only run the query if we have an ID
   });
 
   if (isLoading) {
