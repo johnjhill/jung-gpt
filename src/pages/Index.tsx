@@ -29,7 +29,28 @@ const Index = () => {
         body: { dream }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Dream analysis error:', error);
+        
+        // Check if it's the service unavailable error
+        if (error.status === 503) {
+          toast({
+            title: 'Service Unavailable',
+            description: 'The dream analysis service is temporarily unavailable. Please try again later.',
+            variant: 'destructive',
+            duration: 5000,
+          });
+          return;
+        }
+
+        // Handle other errors
+        toast({
+          title: 'Error',
+          description: 'Failed to analyze your dream. Please try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
       console.log('Dream analysis response:', data);
       setAnalysis(data);
@@ -76,7 +97,20 @@ const Index = () => {
         body: { dream: prompt }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's the service unavailable error
+        if (error.status === 503) {
+          toast({
+            title: 'Service Unavailable',
+            description: 'The dream analysis service is temporarily unavailable. Please try again later.',
+            variant: 'destructive',
+            duration: 5000,
+          });
+          return;
+        }
+
+        throw error;
+      }
 
       const finalAnalysisText = data.initialAnalysis; // Use the initial analysis field for the final response
       setFinalAnalysis(finalAnalysisText);
