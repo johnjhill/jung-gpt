@@ -40,11 +40,13 @@ const DreamDetail = () => {
       if (error) throw error;
       console.log('Fetched dream:', data);
       
-      // Safely cast the analysis data
-      const dreamData = {
+      // First cast to unknown, then to DreamAnalysis to satisfy TypeScript
+      const analysis = data.analysis ? (data.analysis as unknown as DreamAnalysis) : null;
+      
+      const dreamData: DreamRecord = {
         ...data,
-        analysis: data.analysis as DreamAnalysis | null
-      } as DreamRecord;
+        analysis
+      };
 
       return dreamData;
     },
