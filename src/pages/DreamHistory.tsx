@@ -75,7 +75,11 @@ const DreamHistory = () => {
       
       <div className="space-y-8">
         {dreams?.map((dream) => (
-          <Card key={dream.id} className="p-6 bg-white/80 backdrop-blur-sm shadow-lg">
+          <Card 
+            key={dream.id} 
+            className="p-6 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all cursor-pointer"
+            onClick={() => navigate(`/dream/${dream.id}`)}
+          >
             <div className="mb-4">
               <p className="text-sm text-gray-500">
                 {format(new Date(dream.created_at), 'MMMM d, yyyy')}
@@ -92,9 +96,12 @@ const DreamHistory = () => {
                     {dream.analysis.initialAnalysis}
                   </p>
                   
-                  <div className="flex flex-wrap gap-4 mt-6">
+                  <div className="flex flex-wrap gap-4 mt-6" onClick={(e) => e.stopPropagation()}>
                     <Button
-                      onClick={() => navigate(`/dream/${dream.id}`)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/dream/${dream.id}`);
+                      }}
                       variant="default"
                       className="bg-dream-purple hover:bg-dream-purple/90 text-white"
                     >
@@ -105,7 +112,10 @@ const DreamHistory = () => {
                     {dream.analysis.finalAnalysis && (
                       <>
                         <Button
-                          onClick={() => handleViewAnalysis(dream.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewAnalysis(dream.id);
+                          }}
                           variant="outline"
                           disabled={loadingDreamId === dream.id}
                           className="border-dream-purple text-dream-purple hover:bg-dream-purple/10"
@@ -124,7 +134,10 @@ const DreamHistory = () => {
                         </Button>
                         
                         <Button
-                          onClick={() => navigate(`/dream/${dream.id}#final`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/dream/${dream.id}#final`);
+                          }}
                           className="bg-blue-500 hover:bg-blue-600 text-white"
                         >
                           Final Analysis
