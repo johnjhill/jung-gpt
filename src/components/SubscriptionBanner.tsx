@@ -24,41 +24,26 @@ export const SubscriptionBanner = ({
         throw new Error('No active session found');
       }
 
-      const { data: response, error } = await supabase.functions.invoke('create-checkout-session', {
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {},
         headers: {
           Authorization: `Bearer ${session.access_token}`
         }
       });
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(`Function error: ${error.message}`);
-      }
+      if (error) throw error;
+      if (!data?.url) throw new Error('Invalid response from server');
 
-      if (!response) {
-        console.error('No response received from function');
-        throw new Error('No response received from server');
-      }
-
-      if (!response.url) {
-        console.error('Invalid response format:', response);
-        throw new Error('Invalid response from server');
-      }
-
-      console.log('Redirecting to checkout:', response.url);
-      
-      // Force a full page reload and redirect
-      window.location.replace(response.url);
+      console.log('Received checkout URL:', data.url);
+      window.location.assign(data.url);
       
     } catch (error) {
       console.error('Error in checkout process:', error);
       toast({
         title: "Checkout Error",
-        description: error instanceof Error ? error.message : "Failed to start checkout process. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to start checkout process",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

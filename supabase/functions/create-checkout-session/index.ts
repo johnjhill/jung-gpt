@@ -8,82 +8,61 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-  );
-
   try {
-    console.log('Starting checkout session creation...');
-    
-    // Get the session or user object
+    // Get user from auth header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header found');
-    }
-    
-    const token = authHeader.replace('Bearer ', '');
-    console.log('Authenticating user with token:', token.substring(0, 10) + '...');
-    
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) {
-      console.error('Error getting user:', userError);
-      throw userError;
+      throw new Error('No authorization header');
     }
 
-    const user = userData.user;
-    if (!user) {
-      throw new Error('No user found');
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+
+    if (userError || !user?.email) {
+      throw new Error('Authentication failed');
     }
 
-    const email = user.email;
-    if (!email) {
-      throw new Error('No email found');
-    }
+    console.log('Creating checkout for user:', user.email);
 
-    console.log('Creating checkout session for email:', email);
-
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
-    if (!stripeSecretKey) {
-      throw new Error('Stripe secret key not configured');
-    }
-
-    const stripe = new Stripe(stripeSecretKey, {
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
       apiVersion: '2023-10-16',
     });
 
-    console.log('Checking for existing customer...');
+    // Check if customer exists
     const customers = await stripe.customers.list({
-      email: email,
-      limit: 1
+      email: user.email,
+      limit: 1,
     });
 
-    let customer_id = undefined;
-    if (customers.data.length > 0) {
-      customer_id = customers.data[0].id;
-      console.log('Found existing customer:', customer_id);
-      
-      // check if already subscribed
+    let customerId = customers.data[0]?.id;
+
+    // If customer exists, check if they're already subscribed
+    if (customerId) {
       const subscriptions = await stripe.subscriptions.list({
-        customer: customers.data[0].id,
+        customer: customerId,
         status: 'active',
-        limit: 1
+        limit: 1,
       });
 
       if (subscriptions.data.length > 0) {
-        throw new Error("You already have an active subscription");
+        throw new Error('You already have an active subscription');
       }
     }
 
-    console.log('Creating payment session...');
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
-      customer: customer_id,
-      customer_email: customer_id ? undefined : email,
+      customer: customerId,
+      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: 'price_1QUSwUIKNOujQeIQQMe2g7yn',
@@ -95,7 +74,8 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/`,
     });
 
-    console.log('Payment session created:', session.id);
+    console.log('Checkout session created:', session.id);
+
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
@@ -103,16 +83,16 @@ serve(async (req) => {
         status: 200,
       }
     );
+
   } catch (error) {
-    console.error('Error in checkout session creation:', error);
+    console.error('Checkout error:', error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'An unknown error occurred',
-        details: error instanceof Error ? error.stack : undefined
+        error: error instanceof Error ? error.message : 'Internal server error'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 400,
       }
     );
   }
