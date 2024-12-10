@@ -17,6 +17,7 @@ const Index = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqamhuZm1xdGtzY3FiYXF0Y3BlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg5NTQyMjAsImV4cCI6MjAyNDUzMDIyMH0.ZpgFH5QR4TW6qL0kcGYlFODJPcGZGKvZXA3-E_Qp6Vc'
         },
         body: JSON.stringify({ dream }),
       });
@@ -57,6 +58,7 @@ const Index = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqamhuZm1xdGtzY3FiYXF0Y3BlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg5NTQyMjAsImV4cCI6MjAyNDUzMDIyMH0.ZpgFH5QR4TW6qL0kcGYlFODJPcGZGKvZXA3-E_Qp6Vc'
         },
         body: JSON.stringify({ answers }),
       });
