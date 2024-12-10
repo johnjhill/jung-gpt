@@ -10,23 +10,76 @@ const Index = () => {
   const [finalAnalysis, setFinalAnalysis] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const analyzeDream = async (dream: string) => {
+    try {
+      console.log('Analyzing dream:', dream);
+      const response = await fetch('https://ljjhnfmqtkscqbaqtcpe.supabase.co/functions/v1/analyze-dream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ dream }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Dream analysis failed:', errorData);
+        throw new Error(errorData.error || 'Failed to analyze dream');
+      }
+
+      const data = await response.json();
+      console.log('Analysis received:', data);
+      
+      setAnalysis({
+        initialAnalysis: data.initialAnalysis,
+        questions: data.followUpQuestions
+      });
+      setStep(2);
+    } catch (error) {
+      console.error('Error during dream analysis:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to analyze dream. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDreamSubmit = async (dream: string) => {
-    // Mockup analysis for now - will be replaced with actual API call
-    setAnalysis({
-      initialAnalysis: "Your dream appears to contain several archetypal elements that Jung would find significant. The presence of [key symbols] suggests a connection to the collective unconscious...",
-      questions: [
-        "How did you feel about [symbol] in your dream?",
-        "What personal associations do you have with [location]?",
-        "Does this dream remind you of any past experiences?"
-      ]
-    });
-    setStep(2);
+    console.log('Dream submitted:', dream);
+    await analyzeDream(dream);
   };
 
   const handleAnswerSubmit = async (answers: string[]) => {
-    // Mockup final analysis - will be replaced with actual API call
-    setFinalAnalysis("Based on your responses and the initial dream content, this dream appears to be working through important aspects of your individuation process...");
-    setStep(3);
+    try {
+      console.log('Submitting answers:', answers);
+      const response = await fetch('https://ljjhnfmqtkscqbaqtcpe.supabase.co/functions/v1/final-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ answers }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Final analysis failed:', errorData);
+        throw new Error(errorData.error || 'Failed to generate final analysis');
+      }
+
+      const data = await response.json();
+      console.log('Final analysis received:', data);
+      
+      setFinalAnalysis(data.finalAnalysis);
+      setStep(3);
+    } catch (error) {
+      console.error('Error during final analysis:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate final analysis. Please try again later.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
