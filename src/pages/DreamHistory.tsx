@@ -4,6 +4,18 @@ import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 
+interface DreamRecord {
+  id: string;
+  dream_content: string;
+  dream_date: string;
+  analysis: {
+    initialAnalysis: string;
+    questions: string[];
+    answers?: string[];
+    finalAnalysis?: string;
+  } | null;
+}
+
 const DreamHistory = () => {
   const { data: dreams, isLoading } = useQuery({
     queryKey: ['dreams'],
@@ -16,7 +28,7 @@ const DreamHistory = () => {
       
       if (error) throw error;
       console.log('Fetched dreams:', data);
-      return data;
+      return data as DreamRecord[];
     },
   });
 
@@ -49,7 +61,9 @@ const DreamHistory = () => {
               {dream.analysis && (
                 <>
                   <h4 className="text-lg font-serif text-dream-purple mb-2">Analysis</h4>
-                  <p className="text-gray-700">{dream.analysis.finalAnalysis}</p>
+                  <p className="text-gray-700">
+                    {dream.analysis.finalAnalysis || dream.analysis.initialAnalysis}
+                  </p>
                 </>
               )}
             </div>

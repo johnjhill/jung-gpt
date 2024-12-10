@@ -19,10 +19,21 @@ const Index = () => {
     try {
       console.log('Submitting dream for analysis:', dream);
       
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       // First save the dream
       const { data: dreamRecord, error: saveError } = await supabase
         .from('dreams')
-        .insert([{ dream_content: dream }])
+        .insert({
+          dream_content: dream,
+          user_id: user.id
+        })
         .select()
         .single();
 
