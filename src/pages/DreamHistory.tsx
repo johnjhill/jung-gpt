@@ -62,7 +62,7 @@ const DreamHistory = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
   }
@@ -82,12 +82,12 @@ const DreamHistory = () => {
               </p>
             </div>
             <div className="prose prose-sm">
-              <h3 className="text-xl font-serif mb-4">Dream</h3>
+              <h3 className="text-xl font-serif mb-4 text-gray-900">Dream</h3>
               <p className="text-gray-700 mb-4">{dream.dream_content}</p>
               
               {dream.analysis && (
                 <div className="mt-4">
-                  <h4 className="text-lg font-serif mb-2">Initial Analysis</h4>
+                  <h4 className="text-lg font-serif mb-2 text-gray-900">Initial Analysis</h4>
                   <p className="text-gray-700 mb-4">
                     {dream.analysis.initialAnalysis}
                   </p>
@@ -95,9 +95,10 @@ const DreamHistory = () => {
                   <div className="flex flex-wrap gap-4 mt-6">
                     <Button
                       onClick={() => navigate(`/dream/${dream.id}`)}
-                      variant="secondary"
+                      variant="default"
+                      className="bg-dream-purple hover:bg-dream-purple/90 text-white"
                     >
-                      <ArrowRight className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="mr-2 h-4 w-4" />
                       View Full Analysis
                     </Button>
                     
@@ -107,6 +108,7 @@ const DreamHistory = () => {
                           onClick={() => handleViewAnalysis(dream.id)}
                           variant="outline"
                           disabled={loadingDreamId === dream.id}
+                          className="border-dream-purple text-dream-purple hover:bg-dream-purple/10"
                         >
                           {loadingDreamId === dream.id ? (
                             <>
