@@ -156,7 +156,7 @@ const Index = () => {
           <Link to="/history">
             <Button variant="outline" className="gap-2">
               <History className="h-4 w-4" />
-              History
+              Dream History
             </Button>
           </Link>
         </div>
