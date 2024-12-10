@@ -46,6 +46,15 @@ const DreamCard = ({ dream, loadingDreamId, handleViewAnalysis }: DreamCardProps
               {dream.analysis.initialAnalysis}
             </p>
             
+            {dream.analysis.finalAnalysis && (
+              <>
+                <h4 className="text-lg font-serif mb-2 text-gray-900">Final Analysis</h4>
+                <p className="text-gray-700 mb-6">
+                  {dream.analysis.finalAnalysis}
+                </p>
+              </>
+            )}
+            
             <DreamCardButtons 
               dreamId={dream.id}
               hasFinalAnalysis={!!dream.analysis.finalAnalysis}
