@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -24,6 +26,8 @@ interface DreamRecord {
 }
 
 const DreamHistory = () => {
+  const navigate = useNavigate();
+  
   const { data: dreams, isLoading } = useQuery({
     queryKey: ['dreams'],
     queryFn: async () => {
@@ -36,7 +40,6 @@ const DreamHistory = () => {
       if (error) throw error;
       console.log('Fetched dreams:', data);
       
-      // Transform the data to ensure analysis is properly typed
       return (data as any[]).map(dream => ({
         ...dream,
         analysis: dream.analysis as DreamAnalysis
@@ -71,12 +74,23 @@ const DreamHistory = () => {
               <p className="text-gray-700 mb-4">{dream.dream_content}</p>
               
               {dream.analysis && (
-                <>
-                  <h4 className="text-lg font-serif text-dream-purple mb-2">Analysis</h4>
-                  <p className="text-gray-700">
-                    {dream.analysis.finalAnalysis || dream.analysis.initialAnalysis}
+                <div className="mt-4">
+                  <h4 className="text-lg font-serif text-dream-purple mb-2">Initial Analysis</h4>
+                  <p className="text-gray-700 mb-4">
+                    {dream.analysis.initialAnalysis}
                   </p>
-                </>
+                  
+                  {dream.analysis.finalAnalysis && (
+                    <Button
+                      onClick={() => navigate(`/dream/${dream.id}`)}
+                      variant="ghost"
+                      className="text-dream-purple hover:text-dream-purple/90 group"
+                    >
+                      View Full Analysis
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </Card>
