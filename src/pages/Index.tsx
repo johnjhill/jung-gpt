@@ -4,9 +4,6 @@ import { DreamAnalysis } from '../components/DreamAnalysis';
 import { FinalAnalysis } from '../components/FinalAnalysis';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { History } from 'lucide-react';
 import { saveDreamWithInitialAnalysis, updateDreamWithFinalAnalysis } from '@/services/dreamAnalysis';
 
 const Index = () => {
@@ -136,25 +133,15 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-dream-blue via-dream-purple to-dream-lavender">
-      <div className="container max-w-4xl mx-auto py-12 px-4">
-        <div className="flex justify-between items-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif text-white">
-            Dream Analysis Journal
-          </h1>
-          <Link to="/history">
-            <Button variant="outline" className="gap-2">
-              <History className="h-4 w-4" />
-              Dream History
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="space-y-8">
-          {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
-          {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} onSkip={handleSkip} />}
-          {step === 3 && <FinalAnalysis analysis={finalAnalysis} onReset={handleReset} />}
-        </div>
+    <div className="container max-w-4xl mx-auto py-12 px-4">
+      <h1 className="text-4xl md:text-5xl font-serif text-white text-center mb-12">
+        Dream Analysis Journal
+      </h1>
+      
+      <div className="space-y-8">
+        {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
+        {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} onSkip={handleSkip} />}
+        {step === 3 && <FinalAnalysis analysis={finalAnalysis} onReset={handleReset} />}
       </div>
     </div>
   );
