@@ -40,7 +40,7 @@ const Index = () => {
         .from('dreams')
         .insert({
           dream_content: dream,
-          analysis: JSON.stringify(data),
+          analysis: data,
           user_id: user.id
         });
 
