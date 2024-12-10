@@ -15,6 +15,13 @@ serve(async (req) => {
     const { dream } = await req.json()
     console.log('Analyzing dream:', dream)
     
+    const systemPrompt = `You are a dream analysis expert specializing in Jungian psychology. 
+      Analyze dreams by identifying archetypal elements, symbolism, and their potential psychological significance. 
+      First provide an initial analysis, then ask 3 thoughtful follow-up questions to help the dreamer explore deeper meanings.
+      Format your response as a JSON object with two fields:
+      1. initialAnalysis: your initial interpretation
+      2. questions: an array of 3 follow-up questions`
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -24,44 +31,55 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4',
         messages: [
-          {
-            role: 'system',
-            content: `You are a dream analysis expert specializing in Jungian psychology. 
-            Analyze dreams by identifying archetypal elements, symbolism, and their potential psychological significance. 
-            First provide an initial analysis, then ask 3 thoughtful follow-up questions to help the dreamer explore deeper meanings.
-            Format your response as a JSON object with two fields:
-            1. initialAnalysis: your initial interpretation
-            2. questions: an array of 3 follow-up questions`
-          },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: dream }
         ],
+        temperature: 0.7,
+        max_tokens: 1000,
       }),
     })
+
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('OpenAI API error:', errorData)
+      throw new Error(`OpenAI API error: ${response.status} ${errorData}`)
+    }
 
     const data = await response.json()
     console.log('OpenAI response:', data)
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response from OpenAI')
+    if (!data.choices?.[0]?.message?.content) {
+      console.error('Invalid OpenAI response format:', data)
+      throw new Error('Invalid response format from OpenAI')
     }
 
-    const result = data.choices[0].message.content
-    console.log('Parsed result:', result)
-    
-    // Parse the JSON string from the AI response
-    const analysis = JSON.parse(result)
+    const content = data.choices[0].message.content
+    console.log('Raw content from OpenAI:', content)
 
-    return new Response(
-      JSON.stringify(analysis),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (error) {
-    console.error('Error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
+    try {
+      const parsedContent = JSON.parse(content)
+      console.log('Successfully parsed content:', parsedContent)
+
+      if (!parsedContent.initialAnalysis || !Array.isArray(parsedContent.questions)) {
+        throw new Error('Response missing required fields')
+      }
+
+      return new Response(JSON.stringify(parsedContent), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+      })
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError)
+      throw new Error('Failed to parse OpenAI response as JSON')
+    }
+  } catch (error) {
+    console.error('Error in analyze-dream function:', error)
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || 'An error occurred during dream analysis'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
   }
