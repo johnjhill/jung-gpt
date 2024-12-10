@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 export const SubscriptionBanner = ({ 
   subscriptionTier, 
@@ -10,9 +11,13 @@ export const SubscriptionBanner = ({
   monthlyDreamCount?: number;
 }) => {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleUpgradeClick = async () => {
     try {
+      setIsLoading(true);
+      console.log('Creating checkout session...');
+      
       const { data: response, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {}
       });
@@ -20,6 +25,7 @@ export const SubscriptionBanner = ({
       if (error) throw error;
 
       if (response.url) {
+        console.log('Redirecting to checkout:', response.url);
         window.location.href = response.url;
       }
     } catch (error) {
@@ -29,6 +35,8 @@ export const SubscriptionBanner = ({
         description: "Failed to start upgrade process. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -46,8 +54,9 @@ export const SubscriptionBanner = ({
         <Button 
           onClick={handleUpgradeClick}
           className="mt-3 bg-dream-purple hover:bg-dream-purple/90"
+          disabled={isLoading}
         >
-          Upgrade to Premium
+          {isLoading ? "Loading..." : "Upgrade to Premium"}
         </Button>
       </div>
     </div>
