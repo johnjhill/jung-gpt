@@ -92,22 +92,21 @@ const DreamHistory = () => {
                     {dream.analysis.initialAnalysis}
                   </p>
                   
-                  <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-wrap gap-4 mt-6">
                     <Button
                       onClick={() => navigate(`/dream/${dream.id}`)}
-                      variant="ghost"
-                      className="text-foreground hover:text-foreground/90 group"
+                      variant="secondary"
                     >
                       <ArrowRight className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       View Full Analysis
                     </Button>
+                    
                     {dream.analysis.finalAnalysis && (
                       <>
                         <Button
                           onClick={() => handleViewAnalysis(dream.id)}
                           variant="outline"
                           disabled={loadingDreamId === dream.id}
-                          className="text-foreground hover:text-foreground/90 transition-all duration-200 hover:scale-105 active:scale-95"
                         >
                           {loadingDreamId === dream.id ? (
                             <>
@@ -121,6 +120,7 @@ const DreamHistory = () => {
                             </>
                           )}
                         </Button>
+                        
                         <Button
                           onClick={() => navigate(`/dream/${dream.id}#final`)}
                           className="bg-blue-500 hover:bg-blue-600 text-white"
