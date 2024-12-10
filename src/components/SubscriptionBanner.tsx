@@ -19,20 +19,22 @@ export const SubscriptionBanner = ({
       console.log('Creating checkout session...');
       
       const { data: response, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {}
+        body: { action: 'create-session' }
       });
 
       if (error) throw error;
 
-      if (response.url) {
+      if (response?.url) {
         console.log('Redirecting to checkout:', response.url);
         window.location.href = response.url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
       toast({
         title: "Error",
-        description: "Failed to start upgrade process. Please try again.",
+        description: error.message || "Failed to start upgrade process. Please try again.",
         variant: "destructive",
       });
     } finally {
