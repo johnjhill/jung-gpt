@@ -1,10 +1,15 @@
 import { useState } from 'react';
+import OpenAI from 'openai';
 import { DreamEditor } from '../components/DreamEditor';
 import { DreamAnalysis } from '../components/DreamAnalysis';
 import { FinalAnalysis } from '../components/FinalAnalysis';
 import { useToast } from '../hooks/use-toast';
 
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqamhuZm1xdGtzY3FiYXF0Y3BlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg5NTQyMjAsImV4cCI6MjAyNDUzMDIyMH0.ZpgFH5QR4TW6qL0kcGYlFODJPcGZGKvZXA3-E_Qp6Vc';
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
 
 const Index = () => {
   const [step, setStep] = useState(1);
@@ -15,34 +20,36 @@ const Index = () => {
   const analyzeDream = async (dream: string) => {
     try {
       console.log('Analyzing dream:', dream);
-      const response = await fetch('https://ljjhnfmqtkscqbaqtcpe.supabase.co/functions/v1/analyze-dream', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ dream }),
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a dream analyst. Analyze the dream and provide an initial analysis followed by 3 follow-up questions to better understand the dream's meaning. Format your response as JSON with 'initialAnalysis' and 'followUpQuestions' fields."
+          },
+          {
+            role: "user",
+            content: dream
+          }
+        ],
+        response_format: { type: "json_object" }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Dream analysis failed:', errorData);
-        throw new Error(errorData.error || 'Failed to analyze dream');
-      }
-
-      const data = await response.json();
-      console.log('Analysis received:', data);
+      console.log('OpenAI response:', response);
+      
+      const result = JSON.parse(response.choices[0].message.content);
       
       setAnalysis({
-        initialAnalysis: data.initialAnalysis,
-        questions: data.followUpQuestions
+        initialAnalysis: result.initialAnalysis,
+        questions: result.followUpQuestions
       });
       setStep(2);
     } catch (error) {
       console.error('Error during dream analysis:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to analyze dream. Please try again later.",
+        description: "Failed to analyze dream. Please ensure your OpenAI API key is set and try again.",
         variant: "destructive",
       });
     }
@@ -55,32 +62,34 @@ const Index = () => {
 
   const handleAnswerSubmit = async (answers: string[]) => {
     try {
-      console.log('Submitting answers:', answers);
-      const response = await fetch('https://ljjhnfmqtkscqbaqtcpe.supabase.co/functions/v1/final-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ answers }),
+      console.log('Processing answers:', answers);
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a dream analyst. Based on the answers to follow-up questions, provide a final comprehensive analysis of the dream's meaning. Format your response as JSON with a 'finalAnalysis' field."
+          },
+          {
+            role: "user",
+            content: JSON.stringify({ answers })
+          }
+        ],
+        response_format: { type: "json_object" }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Final analysis failed:', errorData);
-        throw new Error(errorData.error || 'Failed to generate final analysis');
-      }
-
-      const data = await response.json();
-      console.log('Final analysis received:', data);
+      console.log('Final analysis response:', response);
       
-      setFinalAnalysis(data.finalAnalysis);
+      const result = JSON.parse(response.choices[0].message.content);
+      
+      setFinalAnalysis(result.finalAnalysis);
       setStep(3);
     } catch (error) {
       console.error('Error during final analysis:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate final analysis. Please try again later.",
+        description: "Failed to generate final analysis. Please try again.",
         variant: "destructive",
       });
     }
