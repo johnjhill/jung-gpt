@@ -22,12 +22,16 @@ export const SubscriptionBanner = ({
         body: { action: 'create-session' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
       if (response?.url) {
         console.log('Redirecting to checkout:', response.url);
         window.location.href = response.url;
       } else {
+        console.error('No URL in response:', response);
         throw new Error('No checkout URL received');
       }
     } catch (error) {

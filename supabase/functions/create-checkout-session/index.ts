@@ -20,6 +20,8 @@ serve(async (req) => {
   );
 
   try {
+    console.log('Starting checkout session creation...');
+    
     // Get the session or user object
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
@@ -35,8 +37,10 @@ serve(async (req) => {
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
+      timeout: 10000, // Set timeout to 10 seconds
     });
 
+    // First check if customer exists
     const customers = await stripe.customers.list({
       email: email,
       limit: 1
@@ -51,7 +55,7 @@ serve(async (req) => {
       const subscriptions = await stripe.subscriptions.list({
         customer: customer_id,
         status: 'active',
-        price: 'price_1QUSwUIKNOujQeIQQMe2g7yn', // Using the price ID directly here
+        price: 'price_1QUSwUIKNOujQeIQQMe2g7yn',
         limit: 1
       });
 
@@ -67,7 +71,7 @@ serve(async (req) => {
       customer_email: customer_id ? undefined : email,
       line_items: [
         {
-          price: 'price_1QUSwUIKNOujQeIQQMe2g7yn', // Using the price ID directly here
+          price: 'price_1QUSwUIKNOujQeIQQMe2g7yn',
           quantity: 1,
         },
       ],
