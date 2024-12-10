@@ -28,6 +28,11 @@ const Login = () => {
         });
       } else if (event === "USER_UPDATED") {
         console.log("User updated");
+      } else if (event === "PASSWORD_RECOVERY") {
+        toast({
+          title: "Password Recovery",
+          description: "Check your email for password reset instructions.",
+        });
       }
     });
 
@@ -58,14 +63,6 @@ const Login = () => {
           }}
           theme="light"
           providers={[]}
-          onError={(error) => {
-            console.error("Auth error:", error);
-            toast({
-              title: "Authentication Error",
-              description: error.message,
-              variant: "destructive",
-            });
-          }}
         />
       </Card>
     </div>
