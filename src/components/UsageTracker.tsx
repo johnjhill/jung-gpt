@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ChartBar, Crown, Lock } from "lucide-react";
+import { ChartBar, Crown, Lock, Loader2 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -51,12 +51,40 @@ export const UsageTracker = () => {
     }
   });
 
-  const handleUpgradeClick = () => {
-    // For now, just show a toast. This would be replaced with actual upgrade flow
-    toast({
-      title: "Upgrade Coming Soon",
-      description: "The upgrade feature will be available soon!",
-    });
+  const handleUpgradeClick = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No session found');
+      }
+
+      const response = await fetch(
+        'https://ljjhnfmqtkscqbaqtcpe.supabase.co/functions/v1/create-checkout-session',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      const { url, error } = await response.json();
+      
+      if (error) {
+        throw new Error(error);
+      }
+
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error('Error starting checkout:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start checkout process",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!usageData || !profile) return null;
@@ -106,6 +134,7 @@ export const UsageTracker = () => {
               <Button
                 onClick={handleUpgradeClick}
                 className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white"
+                disabled={false}
               >
                 <Crown className="mr-2 h-4 w-4" />
                 Upgrade to Premium
