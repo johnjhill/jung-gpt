@@ -1,5 +1,6 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { Configuration, OpenAIApi } from 'https://esm.sh/openai@4.16.1';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { Configuration, OpenAIApi } from "https://esm.sh/openai@4.16.1";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,7 +11,7 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -62,7 +63,7 @@ serve(async (req) => {
     console.log('Sending prompt to OpenAI:', prompt);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         { 
           role: "system", 
@@ -96,8 +97,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify(response), {
       headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'application/json' 
+        ...corsHeaders,
+        'Content-Type': 'application/json'
       },
     });
   } catch (error) {
