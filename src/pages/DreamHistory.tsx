@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Loader2, ArrowRight, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -27,6 +28,7 @@ interface DreamRecord {
 
 const DreamHistory = () => {
   const navigate = useNavigate();
+  const [loadingDreamId, setLoadingDreamId] = useState<string | null>(null);
   
   const { data: dreams, isLoading } = useQuery({
     queryKey: ['dreams'],
@@ -46,6 +48,16 @@ const DreamHistory = () => {
       })) as DreamRecord[];
     },
   });
+
+  const handleViewAnalysis = async (dreamId: string) => {
+    setLoadingDreamId(dreamId);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
+      navigate(`/dream/${dreamId}#final`);
+    } finally {
+      setLoadingDreamId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -92,12 +104,22 @@ const DreamHistory = () => {
                           View Full Analysis
                         </Button>
                         <Button
-                          onClick={() => navigate(`/dream/${dream.id}#final`)}
+                          onClick={() => handleViewAnalysis(dream.id)}
                           variant="outline"
-                          className="text-dream-purple hover:text-dream-purple/90 group"
+                          disabled={loadingDreamId === dream.id}
+                          className="text-dream-purple hover:text-dream-purple/90 transition-all duration-200 hover:scale-105 active:scale-95"
                         >
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          See Final Analysis
+                          {loadingDreamId === dream.id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Loading...
+                            </>
+                          ) : (
+                            <>
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              See Final Analysis
+                            </>
+                          )}
                         </Button>
                       </>
                     )}
