@@ -83,7 +83,7 @@ const Index = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('dreams')
           .update({ 
             analysis: { 
@@ -93,6 +93,9 @@ const Index = () => {
             }
           })
           .eq('id', currentDreamId);
+          
+        if (updateError) throw updateError;
+        console.log('Saved final analysis to database');
       }
       
       setFinalAnalysis(response.finalAnalysis);
@@ -122,7 +125,7 @@ const Index = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('dreams')
           .update({ 
             analysis: { 
@@ -132,6 +135,9 @@ const Index = () => {
             }
           })
           .eq('id', currentDreamId);
+          
+        if (updateError) throw updateError;
+        console.log('Saved final analysis to database');
       }
       
       setFinalAnalysis(response.finalAnalysis);
