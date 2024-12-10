@@ -19,25 +19,45 @@ serve(async (req) => {
   );
 
   try {
+    console.log('Starting checkout session creation...');
+    
     // Get the session or user object
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header found');
+    }
+    
     const token = authHeader.replace('Bearer ', '');
     console.log('Authenticating user with token:', token.substring(0, 10) + '...');
     
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    const email = user?.email;
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError) {
+      console.error('Error getting user:', userError);
+      throw userError;
+    }
 
+    const user = userData.user;
+    if (!user) {
+      throw new Error('No user found');
+    }
+
+    const email = user.email;
     if (!email) {
       throw new Error('No email found');
     }
 
     console.log('Creating checkout session for email:', email);
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecretKey) {
+      throw new Error('Stripe secret key not configured');
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
 
+    console.log('Checking for existing customer...');
     const customers = await stripe.customers.list({
       email: email,
       limit: 1
@@ -47,6 +67,7 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customer_id = customers.data[0].id;
       console.log('Found existing customer:', customer_id);
+      
       // check if already subscribed
       const subscriptions = await stripe.subscriptions.list({
         customer: customers.data[0].id,
@@ -83,9 +104,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error creating payment session:', error);
+    console.error('Error in checkout session creation:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+        details: error instanceof Error ? error.stack : undefined
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

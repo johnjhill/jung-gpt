@@ -17,28 +17,33 @@ export const SubscriptionBanner = ({
   const handleUpgradeClick = async () => {
     setIsLoading(true);
     try {
-      console.log('Creating checkout session...');
+      console.log('Starting checkout process...');
       const { data: response, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {}
       });
 
       if (error) {
         console.error('Supabase function error:', error);
-        throw error;
+        throw new Error(`Function error: ${error.message}`);
       }
 
-      if (!response?.url) {
-        console.error('No checkout URL received:', response);
-        throw new Error('Failed to create checkout session');
+      if (!response) {
+        console.error('No response received from function');
+        throw new Error('No response received from server');
+      }
+
+      if (!response.url) {
+        console.error('Invalid response format:', response);
+        throw new Error('Invalid response from server');
       }
 
       console.log('Redirecting to checkout:', response.url);
       window.location.href = response.url;
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error('Error in checkout process:', error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to start upgrade process. Please try again.",
+        title: "Checkout Error",
+        description: error instanceof Error ? error.message : "Failed to start checkout process. Please try again.",
         variant: "destructive",
       });
     } finally {
