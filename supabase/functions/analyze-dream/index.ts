@@ -49,6 +49,20 @@ serve(async (req) => {
     if (!response.ok) {
       const errorData = await response.text();
       console.error('OpenAI API error:', errorData);
+      
+      // Check specifically for quota errors
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'The dream analysis service is temporarily unavailable. Please try again later or contact support.' 
+          }),
+          { 
+            status: 503,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      
       throw new Error(`OpenAI API error: ${response.status} ${errorData}`);
     }
 
