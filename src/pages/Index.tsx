@@ -146,6 +146,13 @@ const Index = () => {
     }
   };
 
+  const handleReset = () => {
+    setStep(1);
+    setAnalysis(null);
+    setFinalAnalysis(null);
+    setCurrentDreamId(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-dream-blue via-dream-purple to-dream-lavender">
       <div className="container max-w-4xl mx-auto py-12 px-4">
@@ -164,7 +171,7 @@ const Index = () => {
         <div className="space-y-8">
           {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
           {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} onSkip={handleSkip} />}
-          {step === 3 && <FinalAnalysis analysis={finalAnalysis} />}
+          {step === 3 && <FinalAnalysis analysis={finalAnalysis} onReset={handleReset} />}
         </div>
       </div>
     </div>
