@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -80,16 +80,28 @@ const DreamHistory = () => {
                     {dream.analysis.initialAnalysis}
                   </p>
                   
-                  {dream.analysis.finalAnalysis && (
-                    <Button
-                      onClick={() => navigate(`/dream/${dream.id}`)}
-                      variant="ghost"
-                      className="text-dream-purple hover:text-dream-purple/90 group"
-                    >
-                      View Full Analysis
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  )}
+                  <div className="flex gap-4">
+                    {dream.analysis.finalAnalysis && (
+                      <>
+                        <Button
+                          onClick={() => navigate(`/dream/${dream.id}`)}
+                          variant="ghost"
+                          className="text-dream-purple hover:text-dream-purple/90 group"
+                        >
+                          <ArrowRight className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          View Full Analysis
+                        </Button>
+                        <Button
+                          onClick={() => navigate(`/dream/${dream.id}#final`)}
+                          variant="outline"
+                          className="text-dream-purple hover:text-dream-purple/90 group"
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          See Final Analysis
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
