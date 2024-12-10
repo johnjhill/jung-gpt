@@ -30,6 +30,8 @@ serve(async (req) => {
       throw new Error('No email found');
     }
 
+    console.log('Creating checkout session for email:', email);
+
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
     });
@@ -42,14 +44,17 @@ serve(async (req) => {
     let customer_id = undefined;
     if (customers.data.length > 0) {
       customer_id = customers.data[0].id;
-      // check if already subscribed
+      console.log('Found existing customer:', customer_id);
+      
+      // Check if already subscribed
       const subscriptions = await stripe.subscriptions.list({
-        customer: customers.data[0].id,
+        customer: customer_id,
         status: 'active',
         limit: 1
       });
 
       if (subscriptions.data.length > 0) {
+        console.log('Customer already has an active subscription');
         throw new Error("You already have an active subscription");
       }
     }
@@ -67,6 +72,9 @@ serve(async (req) => {
       mode: 'subscription',
       success_url: `${req.headers.get('origin')}/`,
       cancel_url: `${req.headers.get('origin')}/`,
+      allow_promotion_codes: true,
+      billing_address_collection: 'required',
+      payment_method_types: ['card'],
     });
 
     console.log('Payment session created:', session.id);
