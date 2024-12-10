@@ -9,6 +9,7 @@ const openai = new OpenAI({
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
@@ -53,25 +54,44 @@ serve(async (req) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are an expert dream analyst, skilled at interpreting dreams and their symbolic meanings." },
+        { 
+          role: "system", 
+          content: "You are an expert dream analyst, skilled at interpreting dreams and their symbolic meanings. If asked to provide JSON, ensure your response is valid JSON." 
+        },
         { role: "user", content: prompt }
       ],
+      temperature: 0.7,
     });
 
     const result = completion.choices[0].message.content;
     console.log('Received response from OpenAI:', result);
 
     // If this is the initial analysis, parse the response as JSON
-    const response = previousAnalysis ? { finalAnalysis: result } : JSON.parse(result);
+    let response;
+    if (!previousAnalysis) {
+      try {
+        response = JSON.parse(result);
+      } catch (error) {
+        console.error('Error parsing OpenAI response as JSON:', error);
+        throw new Error('Failed to parse AI response as JSON');
+      }
+    } else {
+      response = { finalAnalysis: result };
+    }
 
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in analyzeDream function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
