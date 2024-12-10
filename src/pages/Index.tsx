@@ -16,6 +16,22 @@ const Index = () => {
   const [currentDreamId, setCurrentDreamId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const generateDreamSummary = async (dreamContent: string) => {
+    try {
+      console.log('Generating dream summary...');
+      const { data: response, error } = await supabase.functions.invoke('generateDreamSummary', {
+        body: { dreamContent }
+      });
+      
+      if (error) throw error;
+      console.log('Generated summary:', response.summary);
+      return response.summary;
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      return 'Dream Entry';
+    }
+  };
+
   const handleDreamSubmit = async (dream: string) => {
     try {
       console.log('Submitting dream for analysis:', dream);
@@ -28,6 +44,9 @@ const Index = () => {
         throw new Error('User not authenticated');
       }
 
+      // Generate summary first
+      const summary = await generateDreamSummary(dream);
+
       const { data: response, error } = await supabase.functions.invoke('analyzeDream', {
         body: { dreamContent: dream }
       });
@@ -35,7 +54,7 @@ const Index = () => {
       if (error) throw error;
       console.log('Received analysis:', response);
       
-      const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, response);
+      const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, response, summary);
       setCurrentDreamId(dreamRecord.id);
       setAnalysis(response);
       setStep(2);

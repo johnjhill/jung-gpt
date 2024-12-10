@@ -16,6 +16,7 @@ interface DreamCardProps {
     dream_content: string;
     analysis: DreamAnalysis | null;
     created_at: string;
+    summary: string;
   };
   loadingDreamId: string | null;
   handleViewAnalysis: (dreamId: string) => Promise<void>;
@@ -30,13 +31,13 @@ const DreamCard = ({ dream, loadingDreamId, handleViewAnalysis }: DreamCardProps
       className="p-6 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all cursor-pointer"
       onClick={() => navigate(`/dream/${dream.id}`)}
     >
-      <div className="mb-4">
+      <div className="flex justify-between items-start mb-4">
+        <h2 className="text-2xl font-serif text-gray-900">{dream.summary}</h2>
         <p className="text-sm text-gray-500">
           {format(new Date(dream.created_at), 'MMMM d, yyyy')}
         </p>
       </div>
       <div className="prose prose-sm">
-        <h3 className="text-xl font-serif mb-4 text-gray-900">Dream</h3>
         <p className="text-gray-700 mb-4">{dream.dream_content}</p>
         
         {dream.analysis && (

@@ -11,16 +11,18 @@ interface DreamAnalysis {
 export const saveDreamWithInitialAnalysis = async (
   dreamContent: string, 
   userId: string,
-  analysis: { initialAnalysis: string; questions: string[] }
+  analysis: { initialAnalysis: string; questions: string[] },
+  summary: string
 ) => {
-  console.log('Saving dream with initial analysis:', { dreamContent, analysis });
+  console.log('Saving dream with initial analysis:', { dreamContent, analysis, summary });
   
   const { data: dreamRecord, error: saveError } = await supabase
     .from('dreams')
     .insert({
       dream_content: dreamContent,
       user_id: userId,
-      analysis: analysis as DreamAnalysis
+      analysis: analysis as DreamAnalysis,
+      summary: summary
     })
     .select()
     .single();
@@ -39,7 +41,6 @@ export const updateDreamWithFinalAnalysis = async (
 ) => {
   console.log('Updating dream with final analysis:', { dreamId, finalAnalysis, answers, skipped });
   
-  // First, get the current dream record to preserve existing analysis
   const { data: currentDream, error: fetchError } = await supabase
     .from('dreams')
     .select('analysis')
