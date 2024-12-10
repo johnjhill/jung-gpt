@@ -18,8 +18,17 @@ export const SubscriptionBanner = ({
     setIsLoading(true);
     try {
       console.log('Starting checkout process...');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session found');
+      }
+
       const { data: response, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {}
+        body: {},
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       if (error) {
