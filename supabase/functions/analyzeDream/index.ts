@@ -14,23 +14,31 @@ serve(async (req) => {
 
   try {
     console.log("Received request:", req.method)
-    const { dreamContent, previousAnalysis, userAnswers } = await req.json()
-    console.log("Request payload:", { dreamContent, previousAnalysis, userAnswers })
+    const { dreamContent, previousAnalysis, userAnswers, skipQuestions } = await req.json()
+    console.log("Request payload:", { dreamContent, previousAnalysis, userAnswers, skipQuestions })
 
     if (!dreamContent && !previousAnalysis) {
       throw new Error('No content provided')
     }
 
     let prompt
-    if (previousAnalysis && userAnswers) {
-      prompt = `Based on the initial dream analysis: "${previousAnalysis.initialAnalysis}" 
-      and the user's answers to the following questions:
-      ${previousAnalysis.questions.map((q: string, i: number) => 
-        `Q: ${q}\nA: ${userAnswers[i] || 'No answer provided'}`
-      ).join('\n')}
-      
-      Please provide a comprehensive final analysis of the dream, incorporating psychological insights 
-      and potential symbolic meanings. Focus on how the dreamer's responses add depth to the interpretation.`
+    if (previousAnalysis) {
+      if (skipQuestions) {
+        prompt = `Based on the initial dream analysis: "${previousAnalysis.initialAnalysis}"
+        
+        Please provide a comprehensive final analysis of the dream, focusing on the key themes 
+        and symbols identified in the initial analysis. Since the user chose to skip the follow-up 
+        questions, provide your best interpretation based on the available information.`
+      } else {
+        prompt = `Based on the initial dream analysis: "${previousAnalysis.initialAnalysis}" 
+        and the user's answers to the following questions:
+        ${previousAnalysis.questions.map((q: string, i: number) => 
+          `Q: ${q}\nA: ${userAnswers[i] || 'No answer provided'}`
+        ).join('\n')}
+        
+        Please provide a comprehensive final analysis of the dream, incorporating psychological insights 
+        and potential symbolic meanings. Focus on how the dreamer's responses add depth to the interpretation.`
+      }
     } else {
       prompt = `As a dream analyst, please analyze this dream: "${dreamContent}"
       
@@ -51,7 +59,7 @@ serve(async (req) => {
     console.log("Received response from OpenAI:", result)
 
     return new Response(
-      JSON.stringify(previousAnalysis && userAnswers ? { finalAnalysis: result } : JSON.parse(result)),
+      JSON.stringify(previousAnalysis ? { finalAnalysis: result } : JSON.parse(result)),
       {
         headers: {
           ...corsHeaders,

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FastForward } from 'lucide-react';
 
 interface DreamAnalysisProps {
   analysis: {
@@ -10,9 +10,10 @@ interface DreamAnalysisProps {
     questions: string[];
   } | null;
   onAnswer: (answers: string[]) => void;
+  onSkip: () => void;
 }
 
-export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
+export const DreamAnalysis = ({ analysis, onAnswer, onSkip }: DreamAnalysisProps) => {
   const [answers, setAnswers] = useState<string[]>(Array(3).fill(''));
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -44,7 +45,17 @@ export const DreamAnalysis = ({ analysis, onAnswer }: DreamAnalysisProps) => {
       </div>
       
       <div className="mb-6">
-        <h3 className="text-xl font-serif text-dream-purple mb-4">Exploring Deeper</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-serif text-dream-purple">Exploring Deeper</h3>
+          <Button 
+            variant="outline" 
+            onClick={onSkip}
+            className="gap-2 text-dream-purple hover:text-dream-purple/90"
+          >
+            <FastForward className="h-4 w-4" />
+            Skip to Final Analysis
+          </Button>
+        </div>
         <div className="space-y-4">
           {analysis.questions.map((question, index) => (
             <div key={index} className="p-4 bg-dream-lavender/50 rounded-lg">

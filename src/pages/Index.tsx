@@ -27,7 +27,6 @@ const Index = () => {
         throw new Error('User not authenticated');
       }
 
-      // First save the dream
       const { data: dreamRecord, error: saveError } = await supabase
         .from('dreams')
         .insert({
@@ -47,7 +46,6 @@ const Index = () => {
       if (error) throw error;
       console.log('Received analysis:', response);
       
-      // Update the dream record with initial analysis
       await supabase
         .from('dreams')
         .update({ 
@@ -84,7 +82,6 @@ const Index = () => {
       if (error) throw error;
       console.log('Received final analysis:', response);
       
-      // Update the dream record with final analysis
       if (currentDreamId) {
         await supabase
           .from('dreams')
@@ -92,6 +89,45 @@ const Index = () => {
             analysis: { 
               ...analysis,
               answers,
+              finalAnalysis: response.finalAnalysis
+            }
+          })
+          .eq('id', currentDreamId);
+      }
+      
+      setFinalAnalysis(response.finalAnalysis);
+      setStep(3);
+    } catch (error) {
+      console.error('Error generating final analysis:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate final analysis. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSkip = async () => {
+    try {
+      console.log('Skipping additional questions');
+      
+      const { data: response, error } = await supabase.functions.invoke('analyzeDream', {
+        body: { 
+          previousAnalysis: analysis,
+          skipQuestions: true
+        }
+      });
+
+      if (error) throw error;
+      console.log('Received final analysis:', response);
+      
+      if (currentDreamId) {
+        await supabase
+          .from('dreams')
+          .update({ 
+            analysis: { 
+              ...analysis,
+              skipped: true,
               finalAnalysis: response.finalAnalysis
             }
           })
@@ -127,7 +163,7 @@ const Index = () => {
         
         <div className="space-y-8">
           {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
-          {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} />}
+          {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} onSkip={handleSkip} />}
           {step === 3 && <FinalAnalysis analysis={finalAnalysis} />}
         </div>
       </div>
