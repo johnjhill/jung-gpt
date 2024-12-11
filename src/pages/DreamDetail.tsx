@@ -92,6 +92,13 @@ const DreamDetail = () => {
         analysis: typedAnalysis
       };
       
+      console.log('Dream data:', {
+        id: dreamData.id,
+        hasFinalAnalysis: !!dreamData.analysis?.finalAnalysis,
+        hasAnswers: !!dreamData.analysis?.answers,
+        questions: dreamData.analysis?.questions?.length
+      });
+      
       return dreamData;
     },
     retry: false
@@ -137,6 +144,11 @@ const DreamDetail = () => {
   }
 
   const showFinalAnalysis = profile?.subscription_tier !== 'free' || !dream.analysis?.finalAnalysis;
+  console.log('Final analysis visibility:', {
+    subscriptionTier: profile?.subscription_tier,
+    hasFinalAnalysis: !!dream.analysis?.finalAnalysis,
+    showFinalAnalysis
+  });
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
