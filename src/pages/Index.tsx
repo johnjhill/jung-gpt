@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DreamEditor } from '../components/DreamEditor';
 import { DreamAnalysis } from '../components/DreamAnalysis';
 import { FinalAnalysis } from '../components/FinalAnalysis';
@@ -7,13 +7,43 @@ import { supabase } from '@/integrations/supabase/client';
 import { saveDreamWithInitialAnalysis, updateDreamWithFinalAnalysis } from '@/services/dreamAnalysis';
 import { DreamJournalHeader } from '@/components/DreamJournalHeader';
 import { DreamJournalInfo } from '@/components/DreamJournalInfo';
+import { InitialSetup } from '@/components/InitialSetup';
 
 const Index = () => {
   const [step, setStep] = useState(1);
   const [analysis, setAnalysis] = useState<{ initialAnalysis: string; questions: string[] } | null>(null);
   const [finalAnalysis, setFinalAnalysis] = useState<string | null>(null);
   const [currentDreamId, setCurrentDreamId] = useState<string | null>(null);
+  const [needsSetup, setNeedsSetup] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    checkSetupStatus();
+  }, []);
+
+  const checkSetupStatus = async () => {
+    try {
+      console.log('Checking setup status...');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("has_completed_setup")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+
+      console.log('Setup status:', profile?.has_completed_setup);
+      setNeedsSetup(!profile?.has_completed_setup);
+    } catch (error) {
+      console.error('Error checking setup status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateDreamSummary = async (dreamContent: string) => {
     try {
@@ -133,6 +163,16 @@ const Index = () => {
     setFinalAnalysis(null);
     setCurrentDreamId(null);
   };
+
+  if (loading) return null;
+
+  if (needsSetup) {
+    return (
+      <div className="container max-w-4xl mx-auto py-12 px-4">
+        <InitialSetup />
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">

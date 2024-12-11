@@ -26,6 +26,19 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
             appearance={{ theme: ThemeSupa }}
             providers={['google']}
             theme="dark"
+            localization={{
+              variables: {
+                sign_up: {
+                  email_label: "Email",
+                  password_label: "Password",
+                  button_label: "Sign up",
+                  loading_button_label: "Signing up...",
+                  social_provider_text: "Sign in with {{provider}}",
+                  link_text: "Don't have an account? Sign up",
+                  confirmation_text: "By signing up, you agree to our Terms & Conditions, which include enabling email notifications for daily dream journaling reminders. You can adjust these settings after signing up."
+                }
+              }
+            }}
           />
         </div>
       </div>

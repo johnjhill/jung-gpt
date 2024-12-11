@@ -9,7 +9,12 @@ import { Button } from "@/components/ui/button";
 import { TimezonePicker } from "./TimezonePicker";
 import { Loader2 } from "lucide-react";
 
-export const NotificationPreferences = () => {
+interface NotificationPreferencesProps {
+  onSaved?: () => void;
+  isInitialSetup?: boolean;
+}
+
+export const NotificationPreferences = ({ onSaved, isInitialSetup }: NotificationPreferencesProps) => {
   const [enabled, setEnabled] = useState(false);
   const [time, setTime] = useState("09:00");
   const [timezone, setTimezone] = useState("UTC");
@@ -73,10 +78,15 @@ export const NotificationPreferences = () => {
 
       console.log('Preferences saved successfully');
       setUnsavedChanges(false);
-      toast({
-        title: "Preferences Updated",
-        description: "Your notification preferences have been saved.",
-      });
+      
+      if (!isInitialSetup) {
+        toast({
+          title: "Preferences Updated",
+          description: "Your notification preferences have been saved.",
+        });
+      }
+      
+      onSaved?.();
     } catch (error) {
       console.error("Error saving preferences:", error);
       toast({
@@ -96,8 +106,10 @@ export const NotificationPreferences = () => {
   if (loading) return null;
 
   return (
-    <Card className="p-6 bg-white/90">
-      <h2 className="text-2xl font-serif mb-6 text-gray-800">Email Notifications</h2>
+    <Card className={isInitialSetup ? "bg-transparent shadow-none" : "p-6 bg-white/90"}>
+      {!isInitialSetup && (
+        <h2 className="text-2xl font-serif mb-6 text-gray-800">Email Notifications</h2>
+      )}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <Label htmlFor="notifications" className="text-base">
@@ -141,14 +153,14 @@ export const NotificationPreferences = () => {
           </>
         )}
 
-        {unsavedChanges && (
+        {(unsavedChanges || isInitialSetup) && (
           <Button 
             onClick={savePreferences} 
             disabled={saving}
             className="w-full"
           >
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
+            {isInitialSetup ? "Complete Setup" : "Save Changes"}
           </Button>
         )}
       </div>

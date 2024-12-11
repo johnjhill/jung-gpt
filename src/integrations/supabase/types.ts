@@ -54,6 +54,7 @@ export type Database = {
         Row: {
           created_at: string
           email_notifications_enabled: boolean | null
+          has_completed_setup: boolean
           id: string
           notification_time: string | null
           subscription_tier: string
@@ -63,6 +64,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email_notifications_enabled?: boolean | null
+          has_completed_setup?: boolean
           id: string
           notification_time?: string | null
           subscription_tier?: string
@@ -72,6 +74,7 @@ export type Database = {
         Update: {
           created_at?: string
           email_notifications_enabled?: boolean | null
+          has_completed_setup?: boolean
           id?: string
           notification_time?: string | null
           subscription_tier?: string
