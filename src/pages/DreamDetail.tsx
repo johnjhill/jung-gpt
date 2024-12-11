@@ -1,127 +1,97 @@
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import { format } from 'date-fns';
-
-interface DreamAnalysis {
-  initialAnalysis: string;
-  questions: string[];
-  answers?: string[];
-  finalAnalysis?: string;
-}
-
-interface DreamRecord {
-  id: string;
-  dream_content: string;
-  dream_date: string;
-  analysis: DreamAnalysis | null;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
+import { Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 
 const DreamDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const { data: dream, isLoading } = useQuery({
+  const { data: dream, isLoading, error } = useQuery({
     queryKey: ['dream', id],
     queryFn: async () => {
-      console.log('Fetching dream details for id:', id);
+      console.log('Fetching dream with ID:', id);
       const { data, error } = await supabase
         .from('dreams')
         .select('*')
         .eq('id', id)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching dream:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        throw new Error('Dream not found');
+      }
+      
       console.log('Fetched dream:', data);
-      
-      const analysis = data.analysis ? (data.analysis as unknown as DreamAnalysis) : null;
-      
-      const dreamData: DreamRecord = {
-        ...data,
-        analysis
-      };
-
-      return dreamData;
+      return data;
     },
+    retry: false
   });
+
+  useEffect(() => {
+    if (error) {
+      console.error('Dream fetch error:', error);
+      toast({
+        title: "Error",
+        description: "This dream could not be found. You will be redirected to your dream history.",
+        variant: "destructive"
+      });
+      
+      // Redirect after a short delay to allow the toast to be seen
+      setTimeout(() => {
+        navigate('/history');
+      }, 2000);
+    }
+  }, [error, navigate, toast]);
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
   }
 
   if (!dream) {
-    return (
-      <div className="container max-w-4xl mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl text-white mb-4">Dream not found</h1>
-        <Button onClick={() => navigate('/history')} variant="ghost" className="text-white">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to History
-        </Button>
-      </div>
-    );
+    return null; // The useEffect will handle the redirect
   }
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
-      <Button
-        onClick={() => navigate('/history')}
-        variant="ghost"
-        className="text-white mb-8 hover:text-white/90"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to History
-      </Button>
-
-      <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-lg">
-        <div className="mb-6">
-          <p className="text-sm text-gray-500">
-            {format(new Date(dream.created_at), 'MMMM d, yyyy')}
-          </p>
+      <div className="space-y-8">
+        <h1 className="text-4xl md:text-5xl font-serif text-white">
+          {dream.summary}
+        </h1>
+        
+        <div className="bg-white/90 rounded-lg p-6 shadow-lg">
+          <div className="prose prose-lg max-w-none">
+            <h2 className="text-2xl font-serif mb-4">Dream Content</h2>
+            <p className="text-gray-700">{dream.dream_content}</p>
+            
+            {dream.analysis && (
+              <>
+                <h2 className="text-2xl font-serif mt-8 mb-4">Initial Analysis</h2>
+                <p className="text-gray-700">{dream.analysis.initialAnalysis}</p>
+                
+                {dream.analysis.finalAnalysis && (
+                  <>
+                    <h2 className="text-2xl font-serif mt-8 mb-4" id="final">Final Analysis</h2>
+                    <p className="text-gray-700">{dream.analysis.finalAnalysis}</p>
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </div>
-
-        <div className="prose prose-lg max-w-none">
-          <h2 className="text-3xl font-serif text-dream-purple mb-6">Your Dream</h2>
-          <p className="text-gray-700 mb-8">{dream.dream_content}</p>
-
-          {dream.analysis && (
-            <>
-              {dream.analysis.finalAnalysis ? (
-                <>
-                  <h3 className="text-2xl font-serif text-dream-purple mb-4">Final Analysis</h3>
-                  <p className="text-gray-700 mb-8">{dream.analysis.finalAnalysis}</p>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-2xl font-serif text-dream-purple mb-4">Initial Analysis</h3>
-                  <p className="text-gray-700 mb-8">{dream.analysis.initialAnalysis}</p>
-
-                  {dream.analysis.questions && dream.analysis.answers && (
-                    <div className="mb-8">
-                      <h3 className="text-2xl font-serif text-dream-purple mb-4">Follow-up Questions</h3>
-                      {dream.analysis.questions.map((question, index) => (
-                        <div key={index} className="mb-6">
-                          <p className="font-medium text-dream-purple mb-2">Q: {question}</p>
-                          <p className="text-gray-700">A: {dream.analysis.answers?.[index] || 'No answer provided'}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </Card>
+      </div>
     </div>
   );
 };
