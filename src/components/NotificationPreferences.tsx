@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TimezonePicker } from "./TimezonePicker";
 import { Loader2 } from "lucide-react";
+import { NotificationToggle } from "./NotificationToggle";
+import { TimePreferencesForm } from "./TimePreferencesForm";
 
 interface NotificationPreferencesProps {
   onSaved?: () => void;
@@ -45,7 +43,7 @@ export const NotificationPreferences = ({ onSaved, isInitialSetup }: Notificatio
         console.log('Loaded preferences:', profile);
         setEnabled(profile.email_notifications_enabled || false);
         if (profile.notification_time) {
-          setTime(profile.notification_time.slice(0, 5)); // Convert "HH:mm:ss" to "HH:mm"
+          setTime(profile.notification_time.slice(0, 5));
         }
         setTimezone(profile.timezone || "UTC");
         setUnsavedChanges(false);
@@ -69,7 +67,7 @@ export const NotificationPreferences = ({ onSaved, isInitialSetup }: Notificatio
         .from("profiles")
         .update({
           email_notifications_enabled: enabled,
-          notification_time: time + ":00", // Add seconds for database format
+          notification_time: time + ":00",
           timezone
         })
         .eq("id", user.id);
@@ -111,46 +109,27 @@ export const NotificationPreferences = ({ onSaved, isInitialSetup }: Notificatio
         <h2 className="text-2xl font-serif mb-6 text-gray-800">Email Notifications</h2>
       )}
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="notifications" className="text-base">
-            Daily dream recording reminders
-          </Label>
-          <Switch
-            id="notifications"
-            checked={enabled}
-            onCheckedChange={(checked) => {
-              setEnabled(checked);
+        <NotificationToggle 
+          enabled={enabled}
+          onToggle={(checked) => {
+            setEnabled(checked);
+            handleChange();
+          }}
+        />
+        
+        {enabled && (
+          <TimePreferencesForm
+            time={time}
+            timezone={timezone}
+            onTimeChange={(newTime) => {
+              setTime(newTime);
+              handleChange();
+            }}
+            onTimezoneChange={(newTimezone) => {
+              setTimezone(newTimezone);
               handleChange();
             }}
           />
-        </div>
-        
-        {enabled && (
-          <>
-            <TimezonePicker 
-              value={timezone}
-              onChange={(newTimezone) => {
-                setTimezone(newTimezone);
-                handleChange();
-              }}
-            />
-            
-            <div className="space-y-2">
-              <Label htmlFor="time" className="text-sm text-gray-600">
-                Notification time ({timezone})
-              </Label>
-              <Input
-                id="time"
-                type="time"
-                value={time}
-                onChange={(e) => {
-                  setTime(e.target.value);
-                  handleChange();
-                }}
-                className="w-32"
-              />
-            </div>
-          </>
         )}
 
         {(unsavedChanges || isInitialSetup) && (
