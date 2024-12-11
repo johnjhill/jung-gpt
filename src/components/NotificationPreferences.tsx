@@ -77,12 +77,10 @@ export const NotificationPreferences = ({ onSaved, isInitialSetup }: Notificatio
       console.log('Preferences saved successfully');
       setUnsavedChanges(false);
       
-      if (!isInitialSetup) {
-        toast({
-          title: "Preferences Updated",
-          description: "Your notification preferences have been saved.",
-        });
-      }
+      toast({
+        title: "Preferences Updated",
+        description: "Your notification preferences have been saved.",
+      });
       
       onSaved?.();
     } catch (error) {
