@@ -11,66 +11,91 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Max-Age': '86400',
+      }
+    });
   }
 
   try {
-    console.log('Starting checkout session creation...')
+    console.log('Starting checkout session creation...');
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     // Validate authorization
-    const authHeader = req.headers.get('Authorization')
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header')
+      console.error('No authorization header provided');
+      throw new Error('No authorization header');
     }
 
     // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
-
-    // Get user from token
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
     
-    if (userError || !user) {
-      console.error('Auth error:', userError)
-      throw new Error('Unauthorized')
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Missing Supabase environment variables');
+      throw new Error('Server configuration error');
     }
 
-    console.log('Authenticated user:', user.id)
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Get user from token
+    const token = authHeader.replace('Bearer ', '');
+    console.log('Authenticating user with token...');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    
+    if (userError || !user) {
+      console.error('Auth error:', userError);
+      throw new Error('Unauthorized');
+    }
+
+    console.log('Authenticated user:', user.id);
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      console.error('Missing Stripe secret key');
+      throw new Error('Server configuration error');
+    }
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
-    })
+    });
 
     // Check for existing customer
-    console.log('Checking for existing customer...')
+    console.log('Checking for existing customer...');
     const customers = await stripe.customers.list({
       email: user.email,
       limit: 1
-    })
+    });
 
-    let customerId = undefined
+    let customerId = undefined;
     if (customers.data.length > 0) {
-      customerId = customers.data[0].id
-      console.log('Found existing customer:', customerId)
+      customerId = customers.data[0].id;
+      console.log('Found existing customer:', customerId);
       
       // Check for active subscriptions
       const subscriptions = await stripe.subscriptions.list({
         customer: customerId,
         status: 'active',
         limit: 1
-      })
+      });
 
       if (subscriptions.data.length > 0) {
-        throw new Error('You already have an active subscription')
+        throw new Error('You already have an active subscription');
       }
     }
 
+    const origin = req.headers.get('origin');
+    if (!origin) {
+      console.error('No origin header provided');
+      throw new Error('Invalid request origin');
+    }
+
     // Create Stripe checkout session
-    console.log('Creating checkout session...')
+    console.log('Creating checkout session...');
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -81,29 +106,30 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/preferences`,
-      cancel_url: `${req.headers.get('origin')}/preferences`,
-    })
+      success_url: `${origin}/preferences`,
+      cancel_url: `${origin}/preferences`,
+    });
 
-    console.log('Checkout session created:', session.id)
+    console.log('Checkout session created:', session.id);
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
-    )
+    );
 
   } catch (error) {
-    console.error('Error in checkout session creation:', error)
+    console.error('Error in checkout session creation:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const statusCode = error instanceof Error && error.message === 'Unauthorized' ? 401 : 400;
+    
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
-      }),
+      JSON.stringify({ error: errorMessage }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: statusCode,
       }
-    )
+    );
   }
-})
+});
