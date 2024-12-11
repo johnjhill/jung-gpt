@@ -30,7 +30,7 @@ export const InitialSetup = ({ onSetupComplete }: InitialSetupProps) => {
       console.log('Initial setup completed successfully');
       toast({
         title: "Setup Complete!",
-        description: "Welcome to Dream Journal. You can now start recording your dreams.",
+        description: "You're all set to start recording and analyzing your dreams.",
       });
 
       onSetupComplete();
@@ -50,10 +50,14 @@ export const InitialSetup = ({ onSetupComplete }: InitialSetupProps) => {
     <Card className="p-6 bg-white/90">
       <div className="space-y-6">
         <div className="text-center space-y-4">
-          <h2 className="text-2xl font-serif text-gray-800">Welcome to Dream Journal!</h2>
+          <h2 className="text-2xl font-serif text-gray-800">Complete Your Setup</h2>
           <p className="text-gray-600">
-            Let's set up your daily dream recording reminders. By default, email notifications are enabled
-            as per our Terms & Conditions.
+            To get started with your dream analysis journey, we need to set up your daily dream recording reminders. 
+            This helps ensure you capture your dreams while they're still fresh in your memory.
+          </p>
+          <p className="text-gray-600">
+            Choose your preferred notification time below, and we'll send you gentle reminders 
+            to record and analyze your dreams.
           </p>
         </div>
         

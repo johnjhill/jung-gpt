@@ -14,15 +14,20 @@ const Index = () => {
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
-      <DreamJournalHeader />
-      
       {showSetup ? (
-        <SetupManager onSetupComplete={handleSetupComplete} />
+        <div className="space-y-8">
+          <h1 className="text-4xl md:text-5xl font-serif text-white text-center">
+            Welcome to Dream Journal
+          </h1>
+          <SetupManager onSetupComplete={handleSetupComplete} />
+        </div>
       ) : (
-        <DreamJournalMain />
+        <>
+          <DreamJournalHeader />
+          <DreamJournalMain />
+          <DreamJournalInfo />
+        </>
       )}
-
-      <DreamJournalInfo />
     </div>
   );
 };
