@@ -65,6 +65,24 @@ const DreamDetail = () => {
       if (!data) {
         throw new Error('Dream not found');
       }
+
+      // Safely type cast the analysis field
+      let typedAnalysis: DreamAnalysis | null = null;
+      if (data.analysis && typeof data.analysis === 'object' && !Array.isArray(data.analysis)) {
+        const analysis = data.analysis as Record<string, unknown>;
+        if (
+          typeof analysis.initialAnalysis === 'string' &&
+          Array.isArray(analysis.questions) &&
+          analysis.questions.every(q => typeof q === 'string')
+        ) {
+          typedAnalysis = {
+            initialAnalysis: analysis.initialAnalysis,
+            questions: analysis.questions,
+            answers: Array.isArray(analysis.answers) ? analysis.answers.map(a => String(a)) : undefined,
+            finalAnalysis: typeof analysis.finalAnalysis === 'string' ? analysis.finalAnalysis : undefined
+          };
+        }
+      }
       
       // Convert the raw data to our Dream type
       const dreamData: Dream = {
@@ -72,7 +90,7 @@ const DreamDetail = () => {
         dream_content: data.dream_content,
         created_at: data.created_at,
         summary: data.summary,
-        analysis: data.analysis as DreamAnalysis | null
+        analysis: typedAnalysis
       };
       
       console.log('Fetched dream:', dreamData);
