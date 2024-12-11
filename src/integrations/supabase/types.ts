@@ -57,6 +57,7 @@ export type Database = {
           id: string
           notification_time: string | null
           subscription_tier: string
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -65,6 +66,7 @@ export type Database = {
           id: string
           notification_time?: string | null
           subscription_tier?: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -73,6 +75,7 @@ export type Database = {
           id?: string
           notification_time?: string | null
           subscription_tier?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: []
