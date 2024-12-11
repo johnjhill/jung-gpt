@@ -59,7 +59,7 @@ export const UsageTracker = () => {
       }
 
       const response = await fetch(
-        'https://ljjhnfmqtkscqbaqtcpe.supabase.co/functions/v1/create-checkout-session',
+        `${window.location.origin}/functions/v1/create-checkout-session`,
         {
           method: 'POST',
           headers: {

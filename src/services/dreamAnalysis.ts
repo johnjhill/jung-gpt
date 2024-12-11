@@ -16,7 +16,7 @@ export const saveDreamWithInitialAnalysis = async (
   summary: string
 ) => {
   console.log('Saving dream with initial analysis...');
-  const analysisJson: DreamAnalysis = {
+  const analysisJson: Record<string, unknown> = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions
   };
@@ -50,8 +50,8 @@ export const updateDreamWithFinalAnalysis = async (
     throw new Error('No analysis found for dream');
   }
 
-  const updatedAnalysis: DreamAnalysis = {
-    ...currentAnalysis as unknown as DreamAnalysis,
+  const updatedAnalysis: Record<string, unknown> = {
+    ...(currentAnalysis as Record<string, unknown>),
     finalAnalysis,
     answers: answers || [],
     skipped: skipped || false
