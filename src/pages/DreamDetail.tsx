@@ -30,11 +30,12 @@ const DreamDetail = () => {
     queryKey: ['dream', id],
     queryFn: async () => {
       console.log('Fetching dream with ID:', id);
+      
       const { data, error } = await supabase
         .from('dreams')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle(); // Using maybeSingle() instead of single() to handle not found case
       
       if (error) {
         console.error('Error fetching dream:', error);
