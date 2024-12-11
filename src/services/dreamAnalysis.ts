@@ -16,7 +16,7 @@ export const saveDreamWithInitialAnalysis = async (
   summary: string
 ) => {
   console.log('Saving dream with initial analysis...');
-  const analysisJson: Record<string, unknown> = {
+  const analysisJson: DreamAnalysis = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions
   };
@@ -26,7 +26,7 @@ export const saveDreamWithInitialAnalysis = async (
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysisJson as Json,
+      analysis: analysisJson as unknown as Json,
       summary: summary,
       dream_date: new Date().toISOString().split('T')[0]
     })
@@ -61,7 +61,7 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
-    const currentAnalysis = currentDream.analysis as DreamAnalysis;
+    const currentAnalysis = currentDream.analysis as unknown as DreamAnalysis;
     const updatedAnalysis: DreamAnalysis = {
       ...currentAnalysis,
       finalAnalysis,
@@ -72,7 +72,7 @@ export const updateDreamWithFinalAnalysis = async (
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
-        analysis: updatedAnalysis as Json
+        analysis: updatedAnalysis as unknown as Json
       })
       .eq('id', dreamId);
 
