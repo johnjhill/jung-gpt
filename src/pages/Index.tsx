@@ -138,7 +138,7 @@ const Index = () => {
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
       <h1 className="text-4xl md:text-5xl font-serif text-white mb-12 text-center">
-        Dream Analysis Journal
+        Dream Journal
       </h1>
       
       <Card className="bg-white/90 p-6 mb-8 shadow-lg">
