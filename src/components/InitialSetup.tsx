@@ -25,9 +25,12 @@ export const InitialSetup = () => {
 
       console.log('Initial setup completed successfully');
       toast({
-        title: "Welcome to Dream Journal!",
-        description: "Your notification preferences have been saved.",
+        title: "Setup Complete!",
+        description: "Welcome to Dream Journal. You can now start recording your dreams.",
       });
+
+      // Force a page reload to show the main interface
+      window.location.reload();
     } catch (error) {
       console.error('Error completing initial setup:', error);
       toast({
