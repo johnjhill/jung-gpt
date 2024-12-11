@@ -20,6 +20,16 @@ const Index = () => {
 
   useEffect(() => {
     checkSetupStatus();
+    
+    // Listen for storage events that indicate setup completion
+    const handleStorageChange = (event: StorageEvent | Event) => {
+      if ('key' in event && event.key === 'setup_completed') {
+        checkSetupStatus();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const checkSetupStatus = async () => {

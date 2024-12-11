@@ -29,8 +29,9 @@ export const InitialSetup = () => {
         description: "Welcome to Dream Journal. You can now start recording your dreams.",
       });
 
-      // Force a page reload to show the main interface
-      window.location.reload();
+      // Instead of reloading, we'll update the local storage to trigger a re-render
+      localStorage.setItem('setup_completed', 'true');
+      window.dispatchEvent(new Event('storage'));
     } catch (error) {
       console.error('Error completing initial setup:', error);
       toast({
