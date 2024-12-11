@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { saveDreamWithInitialAnalysis, updateDreamWithFinalAnalysis } from '@/services/dreamAnalysis';
 import { DreamJournalHeader } from './DreamJournalHeader';
 import { DreamJournalInfo } from './DreamJournalInfo';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const DreamJournalMain = () => {
   const [step, setStep] = useState(1);
@@ -14,6 +15,7 @@ export const DreamJournalMain = () => {
   const [finalAnalysis, setFinalAnalysis] = useState<string | null>(null);
   const [currentDreamId, setCurrentDreamId] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const generateDreamSummary = async (dreamContent: string) => {
     try {
@@ -57,6 +59,9 @@ export const DreamJournalMain = () => {
         throw new Error('Failed to save dream');
       }
       
+      // Invalidate the dreams usage query to trigger a refresh
+      await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
+      
       setCurrentDreamId(dreamRecord.id);
       setAnalysis(response);
       setStep(2);
@@ -91,6 +96,9 @@ export const DreamJournalMain = () => {
         }
       }
       
+      // Invalidate the dreams usage query to trigger a refresh
+      await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
+      
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
     } catch (error) {
@@ -123,6 +131,9 @@ export const DreamJournalMain = () => {
           throw new Error('Failed to update dream with final analysis');
         }
       }
+      
+      // Invalidate the dreams usage query to trigger a refresh
+      await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
       
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
