@@ -27,12 +27,16 @@ export const saveDreamWithInitialAnalysis = async (
       user_id: userId,
       dream_content: dreamContent,
       analysis: analysisJson as Json,
-      summary: summary
+      summary: summary,
+      dream_date: new Date().toISOString().split('T')[0]
     })
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error saving dream:', error);
+    throw error;
+  }
   console.log('Dream saved:', data);
   return data;
 };
@@ -42,42 +46,41 @@ export const updateDreamWithFinalAnalysis = async (
   finalAnalysis: string,
   answers?: string[],
   skipped?: boolean
-) => {
+): Promise<boolean> => {
   console.log('Updating dream with final analysis...');
-  const currentAnalysis = await getDreamAnalysis(dreamId);
-  
-  if (!currentAnalysis) {
-    throw new Error('No analysis found for dream');
+  try {
+    const { data: currentDream, error: fetchError } = await supabase
+      .from('dreams')
+      .select('analysis')
+      .eq('id', dreamId)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
+    if (!currentDream) {
+      console.error('No dream found with id:', dreamId);
+      return false;
+    }
+
+    const currentAnalysis = currentDream.analysis as DreamAnalysis;
+    const updatedAnalysis: DreamAnalysis = {
+      ...currentAnalysis,
+      finalAnalysis,
+      answers: answers || [],
+      skipped: skipped || false
+    };
+
+    const { error: updateError } = await supabase
+      .from('dreams')
+      .update({
+        analysis: updatedAnalysis as Json
+      })
+      .eq('id', dreamId);
+
+    if (updateError) throw updateError;
+    console.log('Dream updated successfully');
+    return true;
+  } catch (error) {
+    console.error('Error updating dream:', error);
+    return false;
   }
-
-  const updatedAnalysis: Record<string, unknown> = {
-    ...(currentAnalysis as Record<string, unknown>),
-    finalAnalysis,
-    answers: answers || [],
-    skipped: skipped || false
-  };
-
-  const { data, error } = await supabase
-    .from('dreams')
-    .update({
-      analysis: updatedAnalysis as Json
-    })
-    .eq('id', dreamId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  console.log('Dream updated:', data);
-  return data;
-};
-
-const getDreamAnalysis = async (dreamId: string) => {
-  const { data, error } = await supabase
-    .from('dreams')
-    .select('analysis')
-    .eq('id', dreamId)
-    .single();
-
-  if (error) throw error;
-  return data.analysis;
 };
