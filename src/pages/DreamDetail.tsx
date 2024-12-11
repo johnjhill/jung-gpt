@@ -46,11 +46,15 @@ const DreamDetail = () => {
       }
       
       console.log('Fetched dream:', data);
+
+      // First cast the analysis to unknown, then to DreamAnalysis
+      const analysis = data.analysis ? (data.analysis as unknown as DreamAnalysis) : null;
+      
       // Cast the raw data to match our Dream interface
       return {
         id: data.id,
         dream_content: data.dream_content,
-        analysis: data.analysis as DreamAnalysis | null,
+        analysis: analysis,
         created_at: data.created_at,
         summary: data.summary
       } satisfies Dream;
