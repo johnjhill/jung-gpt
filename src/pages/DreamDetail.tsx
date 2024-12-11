@@ -56,18 +56,20 @@ const DreamDetail = () => {
       const { data, error } = await supabase
         .from('dreams')
         .select('*')
-        .eq('id', id);
+        .eq('id', id)
+        .maybeSingle(); // Using maybeSingle() instead of single()
       
       if (error) {
         console.error('Error fetching dream:', error);
         throw error;
       }
       
-      if (!data || data.length === 0) {
+      if (!data) {
+        console.error('Dream not found');
         throw new Error('Dream not found');
       }
 
-      const dreamData = data[0];
+      const dreamData = data;
       let typedAnalysis: DreamAnalysis | null = null;
 
       if (dreamData.analysis && typeof dreamData.analysis === 'object' && !Array.isArray(dreamData.analysis)) {
