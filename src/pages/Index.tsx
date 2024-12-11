@@ -24,7 +24,7 @@ const Index = () => {
     // Listen for storage events that indicate setup completion
     const handleStorageChange = (event: StorageEvent | Event) => {
       if ('key' in event && event.key === 'setup_completed') {
-        checkSetupStatus();
+        setNeedsSetup(false);
       }
     };
 
