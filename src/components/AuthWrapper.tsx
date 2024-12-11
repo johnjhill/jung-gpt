@@ -81,6 +81,15 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
                   color: '#191970',
                   fontWeight: '500',
                 },
+                socialButton: {
+                  backgroundColor: 'white',
+                  color: '#191970',
+                  borderColor: '#663399',
+                },
+                socialButtonText: {
+                  color: '#191970',
+                  fontWeight: '500',
+                },
               },
             }}
             theme="default"
