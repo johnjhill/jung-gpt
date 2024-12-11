@@ -6,6 +6,21 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
+interface DreamAnalysis {
+  initialAnalysis: string;
+  questions: string[];
+  answers?: string[];
+  finalAnalysis?: string;
+}
+
+interface Dream {
+  id: string;
+  dream_content: string;
+  analysis: DreamAnalysis | null;
+  created_at: string;
+  summary: string;
+}
+
 const DreamDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -31,7 +46,7 @@ const DreamDetail = () => {
       }
       
       console.log('Fetched dream:', data);
-      return data;
+      return data as Dream;
     },
     retry: false
   });
