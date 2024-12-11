@@ -43,8 +43,8 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-dream-blue via-dream-purple to-dream-lavender p-4">
-        <div className="w-full max-w-md bg-white/10 backdrop-blur-sm p-8 rounded-lg shadow-xl">
-          <h1 className="text-3xl font-serif text-white text-center mb-8">Dream Mosaic</h1>
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-xl">
+          <h1 className="text-4xl font-serif text-dream-blue text-center mb-8">Jung GPT</h1>
           <Auth
             supabaseClient={supabase}
             appearance={{
@@ -52,13 +52,38 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
               variables: {
                 default: {
                   colors: {
-                    brand: '#6366f1',
-                    brandAccent: '#4f46e5',
+                    brand: '#663399',
+                    brandAccent: '#191970',
+                    inputBackground: 'white',
+                    inputText: 'black',
+                    inputPlaceholder: '#666666',
+                    messageText: '#191970',
+                    messageBackground: '#E6E6FA',
+                    anchorTextColor: '#191970',
+                    dividerBackground: '#663399',
                   },
                 },
               },
+              style: {
+                input: {
+                  backgroundColor: 'white',
+                  color: 'black',
+                },
+                label: {
+                  color: '#191970',
+                  fontWeight: '500',
+                },
+                button: {
+                  color: 'white',
+                  fontWeight: '500',
+                },
+                anchor: {
+                  color: '#191970',
+                  fontWeight: '500',
+                },
+              },
             }}
-            theme="dark"
+            theme="default"
             providers={['google']}
             localization={{
               variables: {
