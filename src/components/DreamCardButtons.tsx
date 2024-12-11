@@ -59,7 +59,7 @@ const DreamCardButtons = ({
         <DreamAnalysisButtons
           dreamId={dreamId}
           loadingDreamId={loadingDreamId}
-          handleViewAnalysis={handleAnalysisClick}
+          handleViewAnalysis={() => handleViewAnalysis(dreamId)}
         />
       )}
     </div>

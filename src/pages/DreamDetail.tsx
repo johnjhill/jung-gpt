@@ -66,8 +66,17 @@ const DreamDetail = () => {
         throw new Error('Dream not found');
       }
       
-      console.log('Fetched dream:', data);
-      return data as Dream;
+      // Convert the raw data to our Dream type
+      const dreamData: Dream = {
+        id: data.id,
+        dream_content: data.dream_content,
+        created_at: data.created_at,
+        summary: data.summary,
+        analysis: data.analysis as DreamAnalysis | null
+      };
+      
+      console.log('Fetched dream:', dreamData);
+      return dreamData;
     },
     retry: false
   });
