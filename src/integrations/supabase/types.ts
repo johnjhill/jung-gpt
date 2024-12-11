@@ -53,19 +53,25 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email_notifications_enabled: boolean | null
           id: string
+          notification_time: string | null
           subscription_tier: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          email_notifications_enabled?: boolean | null
           id: string
+          notification_time?: string | null
           subscription_tier?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          email_notifications_enabled?: boolean | null
           id?: string
+          notification_time?: string | null
           subscription_tier?: string
           updated_at?: string
         }
