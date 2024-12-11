@@ -1,6 +1,7 @@
 import { DreamEditor } from './DreamEditor';
 import { DreamAnalysis } from './DreamAnalysis';
 import { FinalAnalysis } from './FinalAnalysis';
+import { DreamJournalInfo } from './DreamJournalInfo';
 import { useDreamAnalysis } from '@/hooks/useDreamAnalysis';
 
 export const DreamJournalMain = () => {
@@ -16,7 +17,12 @@ export const DreamJournalMain = () => {
 
   return (
     <div className="space-y-8 mb-12">
-      {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
+      {step === 1 && (
+        <>
+          <DreamEditor onSubmit={handleDreamSubmit} />
+          <DreamJournalInfo />
+        </>
+      )}
       {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} onSkip={handleSkip} />}
       {step === 3 && <FinalAnalysis analysis={finalAnalysis} onReset={handleReset} />}
     </div>
