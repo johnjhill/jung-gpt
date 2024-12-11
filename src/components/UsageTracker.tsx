@@ -58,24 +58,20 @@ export const UsageTracker = () => {
         throw new Error('No session found');
       }
 
-      const response = await fetch(
-        `${window.location.origin}/functions/v1/create-checkout-session`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
+      console.log('Creating checkout session...');
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {},
+      });
 
-      const { url, error } = await response.json();
-      
       if (error) {
-        throw new Error(error);
+        throw error;
       }
 
-      if (url) {
-        window.location.href = url;
+      if (data?.url) {
+        console.log('Redirecting to checkout:', data.url);
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Error starting checkout:', error);
