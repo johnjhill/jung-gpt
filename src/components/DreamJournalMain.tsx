@@ -53,6 +53,10 @@ export const DreamJournalMain = () => {
       console.log('Received analysis:', response);
       
       const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, response, summary);
+      if (!dreamRecord) {
+        throw new Error('Failed to save dream');
+      }
+      
       setCurrentDreamId(dreamRecord.id);
       setAnalysis(response);
       setStep(2);
@@ -81,7 +85,10 @@ export const DreamJournalMain = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
-        await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, answers);
+        const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, answers);
+        if (!success) {
+          throw new Error('Failed to update dream with final analysis');
+        }
       }
       
       setFinalAnalysis(response.finalAnalysis);
@@ -111,7 +118,10 @@ export const DreamJournalMain = () => {
       console.log('Received final analysis:', response);
       
       if (currentDreamId) {
-        await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
+        const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
+        if (!success) {
+          throw new Error('Failed to update dream with final analysis');
+        }
       }
       
       setFinalAnalysis(response.finalAnalysis);
