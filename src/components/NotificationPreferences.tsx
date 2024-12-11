@@ -5,13 +5,17 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { TimezonePicker } from "./TimezonePicker";
+import { Loader2 } from "lucide-react";
 
 export const NotificationPreferences = () => {
   const [enabled, setEnabled] = useState(false);
   const [time, setTime] = useState("09:00");
   const [timezone, setTimezone] = useState("UTC");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -20,6 +24,7 @@ export const NotificationPreferences = () => {
 
   const loadPreferences = async () => {
     try {
+      console.log('Loading notification preferences...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -32,11 +37,13 @@ export const NotificationPreferences = () => {
       if (error) throw error;
 
       if (profile) {
+        console.log('Loaded preferences:', profile);
         setEnabled(profile.email_notifications_enabled || false);
         if (profile.notification_time) {
           setTime(profile.notification_time.slice(0, 5)); // Convert "HH:mm:ss" to "HH:mm"
         }
         setTimezone(profile.timezone || "UTC");
+        setUnsavedChanges(false);
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
@@ -47,6 +54,9 @@ export const NotificationPreferences = () => {
 
   const savePreferences = async () => {
     try {
+      setSaving(true);
+      console.log('Saving notification preferences...');
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
@@ -61,6 +71,8 @@ export const NotificationPreferences = () => {
 
       if (error) throw error;
 
+      console.log('Preferences saved successfully');
+      setUnsavedChanges(false);
       toast({
         title: "Preferences Updated",
         description: "Your notification preferences have been saved.",
@@ -72,7 +84,13 @@ export const NotificationPreferences = () => {
         description: "Failed to save preferences. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const handleChange = () => {
+    setUnsavedChanges(true);
   };
 
   if (loading) return null;
@@ -90,7 +108,7 @@ export const NotificationPreferences = () => {
             checked={enabled}
             onCheckedChange={(checked) => {
               setEnabled(checked);
-              savePreferences();
+              handleChange();
             }}
           />
         </div>
@@ -101,7 +119,7 @@ export const NotificationPreferences = () => {
               value={timezone}
               onChange={(newTimezone) => {
                 setTimezone(newTimezone);
-                savePreferences();
+                handleChange();
               }}
             />
             
@@ -115,12 +133,23 @@ export const NotificationPreferences = () => {
                 value={time}
                 onChange={(e) => {
                   setTime(e.target.value);
-                  savePreferences();
+                  handleChange();
                 }}
                 className="w-32"
               />
             </div>
           </>
+        )}
+
+        {unsavedChanges && (
+          <Button 
+            onClick={savePreferences} 
+            disabled={saving}
+            className="w-full"
+          >
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+          </Button>
         )}
       </div>
     </Card>
