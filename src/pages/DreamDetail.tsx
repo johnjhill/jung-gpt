@@ -5,7 +5,8 @@ import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
-import { format } from 'date-fns';
+import { DreamContentSection } from '@/components/DreamContentSection';
+import { DreamAnalysisSection } from '@/components/DreamAnalysisSection';
 
 interface DreamAnalysis {
   initialAnalysis: string;
@@ -55,21 +56,22 @@ const DreamDetail = () => {
       const { data, error } = await supabase
         .from('dreams')
         .select('*')
-        .eq('id', id)
-        .maybeSingle();
+        .eq('id', id);
       
       if (error) {
         console.error('Error fetching dream:', error);
         throw error;
       }
       
-      if (!data) {
+      if (!data || data.length === 0) {
         throw new Error('Dream not found');
       }
 
+      const dreamData = data[0];
       let typedAnalysis: DreamAnalysis | null = null;
-      if (data.analysis && typeof data.analysis === 'object' && !Array.isArray(data.analysis)) {
-        const analysis = data.analysis as Record<string, unknown>;
+
+      if (dreamData.analysis && typeof dreamData.analysis === 'object' && !Array.isArray(dreamData.analysis)) {
+        const analysis = dreamData.analysis as Record<string, unknown>;
         if (
           typeof analysis.initialAnalysis === 'string' &&
           Array.isArray(analysis.questions) &&
@@ -84,24 +86,14 @@ const DreamDetail = () => {
         }
       }
       
-      const dreamData: Dream = {
-        id: data.id,
-        dream_content: data.dream_content,
-        created_at: data.created_at,
-        summary: data.summary,
-        analysis: typedAnalysis
-      };
-      
-      console.log('Dream data:', {
+      return {
         id: dreamData.id,
-        hasFinalAnalysis: !!dreamData.analysis?.finalAnalysis,
-        hasAnswers: !!dreamData.analysis?.answers,
-        questions: dreamData.analysis?.questions?.length
-      });
-      
-      return dreamData;
-    },
-    retry: false
+        dream_content: dreamData.dream_content,
+        created_at: dreamData.created_at,
+        summary: dreamData.summary,
+        analysis: typedAnalysis
+      } as Dream;
+    }
   });
 
   useEffect(() => {
@@ -144,63 +136,23 @@ const DreamDetail = () => {
   }
 
   const showFinalAnalysis = profile?.subscription_tier !== 'free' || !dream.analysis?.finalAnalysis;
-  console.log('Final analysis visibility:', {
-    subscriptionTier: profile?.subscription_tier,
-    hasFinalAnalysis: !!dream.analysis?.finalAnalysis,
-    showFinalAnalysis
-  });
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
-      <div className="space-y-8">
-        <div className="flex justify-between items-start">
-          <h1 className="text-4xl md:text-5xl font-serif text-white">
-            {dream.summary}
-          </h1>
-          <p className="text-sm text-gray-300">
-            {format(new Date(dream.created_at), 'MMMM d, yyyy')}
-          </p>
+      <DreamContentSection 
+        summary={dream.summary}
+        createdAt={dream.created_at}
+        content={dream.dream_content}
+      />
+      
+      {dream.analysis && (
+        <div className="mt-8">
+          <DreamAnalysisSection 
+            analysis={dream.analysis}
+            showFinalAnalysis={showFinalAnalysis}
+          />
         </div>
-        
-        <div className="bg-white/90 rounded-lg p-8 shadow-lg space-y-8">
-          <div className="prose prose-lg max-w-none">
-            <section>
-              <h2 className="text-2xl font-serif mb-4 text-dream-purple">Dream Content</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{dream.dream_content}</p>
-            </section>
-            
-            {dream.analysis && (
-              <>
-                <section className="mt-8">
-                  <h2 className="text-2xl font-serif mb-4 text-dream-purple">Initial Analysis</h2>
-                  <p className="text-gray-700 whitespace-pre-wrap">{dream.analysis.initialAnalysis}</p>
-                </section>
-                
-                {dream.analysis.questions && dream.analysis.answers && (
-                  <section className="mt-8">
-                    <h2 className="text-2xl font-serif mb-4 text-dream-purple">Exploration Questions</h2>
-                    <div className="space-y-4">
-                      {dream.analysis.questions.map((question, index) => (
-                        <div key={index} className="bg-dream-lavender/20 p-4 rounded-lg">
-                          <p className="font-medium text-gray-800 mb-2">{question}</p>
-                          <p className="text-gray-700 whitespace-pre-wrap">{dream.analysis?.answers?.[index]}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-                
-                {showFinalAnalysis && dream.analysis.finalAnalysis && (
-                  <section className="mt-8" id="final">
-                    <h2 className="text-2xl font-serif mb-4 text-dream-purple">Final Analysis</h2>
-                    <p className="text-gray-700 whitespace-pre-wrap">{dream.analysis.finalAnalysis}</p>
-                  </section>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
