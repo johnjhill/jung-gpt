@@ -8,6 +8,7 @@ import NavigationBar from "./components/NavigationBar";
 import Index from "./pages/Index";
 import DreamHistory from "./pages/DreamHistory";
 import DreamDetail from "./pages/DreamDetail";
+import Preferences from "./pages/Preferences";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/history" element={<DreamHistory />} />
               <Route path="/dream/:id" element={<DreamDetail />} />
+              <Route path="/preferences" element={<Preferences />} />
             </Routes>
           </div>
         </AuthWrapper>
