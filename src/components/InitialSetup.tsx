@@ -4,7 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { NotificationPreferences } from "./NotificationPreferences";
 
-export const InitialSetup = () => {
+interface InitialSetupProps {
+  onSetupComplete: () => void;
+}
+
+export const InitialSetup = ({ onSetupComplete }: InitialSetupProps) => {
   const [isCompleting, setIsCompleting] = useState(false);
   const { toast } = useToast();
 
@@ -29,9 +33,7 @@ export const InitialSetup = () => {
         description: "Welcome to Dream Journal. You can now start recording your dreams.",
       });
 
-      // Instead of reloading, we'll update the local storage to trigger a re-render
-      localStorage.setItem('setup_completed', 'true');
-      window.dispatchEvent(new Event('storage'));
+      onSetupComplete();
     } catch (error) {
       console.error('Error completing initial setup:', error);
       toast({
