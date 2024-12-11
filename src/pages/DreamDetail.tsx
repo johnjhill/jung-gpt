@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { format } from 'date-fns';
 
 interface DreamAnalysis {
   initialAnalysis: string;
@@ -66,7 +67,6 @@ const DreamDetail = () => {
         throw new Error('Dream not found');
       }
 
-      // Safely type cast the analysis field
       let typedAnalysis: DreamAnalysis | null = null;
       if (data.analysis && typeof data.analysis === 'object' && !Array.isArray(data.analysis)) {
         const analysis = data.analysis as Record<string, unknown>;
@@ -84,7 +84,6 @@ const DreamDetail = () => {
         }
       }
       
-      // Convert the raw data to our Dream type
       const dreamData: Dream = {
         id: data.id,
         dream_content: data.dream_content,
@@ -93,7 +92,6 @@ const DreamDetail = () => {
         analysis: typedAnalysis
       };
       
-      console.log('Fetched dream:', dreamData);
       return dreamData;
     },
     retry: false
@@ -143,25 +141,48 @@ const DreamDetail = () => {
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
       <div className="space-y-8">
-        <h1 className="text-4xl md:text-5xl font-serif text-white">
-          {dream.summary}
-        </h1>
+        <div className="flex justify-between items-start">
+          <h1 className="text-4xl md:text-5xl font-serif text-white">
+            {dream.summary}
+          </h1>
+          <p className="text-sm text-gray-300">
+            {format(new Date(dream.created_at), 'MMMM d, yyyy')}
+          </p>
+        </div>
         
-        <div className="bg-white/90 rounded-lg p-6 shadow-lg">
+        <div className="bg-white/90 rounded-lg p-8 shadow-lg space-y-8">
           <div className="prose prose-lg max-w-none">
-            <h2 className="text-2xl font-serif mb-4">Dream Content</h2>
-            <p className="text-gray-700">{dream.dream_content}</p>
+            <section>
+              <h2 className="text-2xl font-serif mb-4 text-dream-purple">Dream Content</h2>
+              <p className="text-gray-700 whitespace-pre-wrap">{dream.dream_content}</p>
+            </section>
             
             {dream.analysis && (
               <>
-                <h2 className="text-2xl font-serif mt-8 mb-4">Initial Analysis</h2>
-                <p className="text-gray-700">{dream.analysis.initialAnalysis}</p>
+                <section className="mt-8">
+                  <h2 className="text-2xl font-serif mb-4 text-dream-purple">Initial Analysis</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap">{dream.analysis.initialAnalysis}</p>
+                </section>
+                
+                {dream.analysis.questions && dream.analysis.answers && (
+                  <section className="mt-8">
+                    <h2 className="text-2xl font-serif mb-4 text-dream-purple">Exploration Questions</h2>
+                    <div className="space-y-4">
+                      {dream.analysis.questions.map((question, index) => (
+                        <div key={index} className="bg-dream-lavender/20 p-4 rounded-lg">
+                          <p className="font-medium text-gray-800 mb-2">{question}</p>
+                          <p className="text-gray-700 whitespace-pre-wrap">{dream.analysis?.answers?.[index]}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
                 
                 {showFinalAnalysis && dream.analysis.finalAnalysis && (
-                  <>
-                    <h2 className="text-2xl font-serif mt-8 mb-4" id="final">Final Analysis</h2>
-                    <p className="text-gray-700">{dream.analysis.finalAnalysis}</p>
-                  </>
+                  <section className="mt-8" id="final">
+                    <h2 className="text-2xl font-serif mb-4 text-dream-purple">Final Analysis</h2>
+                    <p className="text-gray-700 whitespace-pre-wrap">{dream.analysis.finalAnalysis}</p>
+                  </section>
                 )}
               </>
             )}
