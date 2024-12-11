@@ -141,7 +141,15 @@ const Index = () => {
         Dream Journal
       </h1>
       
-      <Card className="bg-white/90 p-6 mb-8 shadow-lg">
+      <UsageTracker />
+      
+      <div className="space-y-8 mb-12">
+        {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
+        {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} onSkip={handleSkip} />}
+        {step === 3 && <FinalAnalysis analysis={finalAnalysis} onReset={handleReset} />}
+      </div>
+
+      <Card className="bg-white/90 p-6 shadow-lg">
         <h2 className="text-2xl font-serif mb-4 text-gray-800">About Dream Analysis</h2>
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="what-is">
@@ -172,14 +180,6 @@ const Index = () => {
           </AccordionItem>
         </Accordion>
       </Card>
-      
-      <UsageTracker />
-      
-      <div className="space-y-8">
-        {step === 1 && <DreamEditor onSubmit={handleDreamSubmit} />}
-        {step === 2 && <DreamAnalysis analysis={analysis} onAnswer={handleAnswerSubmit} onSkip={handleSkip} />}
-        {step === 3 && <FinalAnalysis analysis={finalAnalysis} onReset={handleReset} />}
-      </div>
     </div>
   );
 };
