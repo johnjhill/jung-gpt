@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DreamJournalHeader } from '@/components/DreamJournalHeader';
-import { DreamJournalInfo } from '@/components/DreamJournalInfo';
 import { SetupManager } from '@/components/SetupManager';
 import { DreamJournalMain } from '@/components/DreamJournalMain';
 import { useQuery } from '@tanstack/react-query';
@@ -39,11 +38,6 @@ const Index = () => {
     }
   }, [profile]);
 
-  const handleSetupComplete = () => {
-    console.log('Setup completed, showing main interface');
-    setShowSetup(false);
-  };
-
   if (isLoading) {
     return null; // AuthWrapper will handle loading state
   }
@@ -61,7 +55,6 @@ const Index = () => {
         <>
           <DreamJournalHeader />
           <DreamJournalMain />
-          <DreamJournalInfo />
         </>
       )}
     </div>
