@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { DatePickerWithRange } from '@/components/DatePickerWithRange';
 import { addDays, isWithinInterval, startOfDay } from 'date-fns';
 import { Card } from '@/components/ui/card';
+import { DateRange } from 'react-day-picker';
 
 interface DreamAnalysis {
   initialAnalysis: string;
@@ -26,18 +27,10 @@ interface DreamRecord {
   summary: string;
 }
 
-interface DateRange {
-  from?: Date;
-  to?: Date;
-}
-
 const DreamHistory = () => {
   const [loadingDreamId, setLoadingDreamId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: undefined,
-    to: undefined,
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   
   const { data: dreams, isLoading } = useQuery({
     queryKey: ['dreams'],
@@ -73,7 +66,7 @@ const DreamHistory = () => {
       dream.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dream.dream_content.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesDate = !dateRange.from || !dateRange.to || 
+    const matchesDate = !dateRange?.from || !dateRange?.to || 
       isWithinInterval(startOfDay(new Date(dream.dream_date)), {
         start: startOfDay(dateRange.from),
         end: startOfDay(dateRange.to)
