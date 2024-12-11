@@ -38,6 +38,11 @@ const Index = () => {
     }
   }, [profile]);
 
+  const handleSetupComplete = () => {
+    console.log('Setup completed, showing main interface');
+    setShowSetup(false);
+  };
+
   if (isLoading) {
     return null; // AuthWrapper will handle loading state
   }
