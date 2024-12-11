@@ -1,10 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Crown } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 interface DreamAnalysis {
   initialAnalysis: string;
@@ -67,49 +67,10 @@ const DreamDetail = () => {
       }
       
       console.log('Fetched dream:', data);
-
-      const analysis = data.analysis ? (data.analysis as unknown as DreamAnalysis) : null;
-      
-      return {
-        id: data.id,
-        dream_content: data.dream_content,
-        analysis: analysis,
-        created_at: data.created_at,
-        summary: data.summary
-      } satisfies Dream;
+      return data as Dream;
     },
     retry: false
   });
-
-  const handleUpgradeClick = async () => {
-    try {
-      console.log('Starting checkout process...');
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No session found');
-      }
-
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {},
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        console.log('Redirecting to checkout:', data.url);
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL received');
-      }
-    } catch (error) {
-      console.error('Error starting checkout:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start checkout process",
-        variant: "destructive",
-      });
-    }
-  };
 
   useEffect(() => {
     if (error) {
@@ -133,18 +94,10 @@ const DreamDetail = () => {
         title: "Premium Feature",
         description: "Upgrade to Premium to analyze more dreams and unlock all features!",
         variant: "default",
-        action: (
-          <Button 
-            onClick={handleUpgradeClick}
-            className="bg-dream-purple hover:bg-dream-purple/90 text-white gap-2"
-          >
-            <Crown className="h-4 w-4" />
-            Upgrade
-          </Button>
-        ),
+        action: <UpgradePrompt />
       });
     }
-  }, [profile, dream]);
+  }, [profile, dream, toast]);
 
   if (isLoading) {
     return (
