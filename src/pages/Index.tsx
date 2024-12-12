@@ -9,7 +9,7 @@ const Index = () => {
   const [showSetup, setShowSetup] = useState(false);
 
   // Fetch user profile to check setup status
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
       console.log('Fetching user profile...');
@@ -32,7 +32,9 @@ const Index = () => {
       console.log('Profile setup status:', data?.has_completed_setup);
       return data;
     },
-    retry: false
+    retry: false,
+    staleTime: 0,
+    cacheTime: 0
   });
 
   useEffect(() => {
@@ -43,8 +45,9 @@ const Index = () => {
     }
   }, [profile]);
 
-  const handleSetupComplete = () => {
+  const handleSetupComplete = async () => {
     console.log('Setup completed, showing main interface');
+    await refetch(); // Refetch profile data to get updated setup status
     setShowSetup(false);
   };
 
