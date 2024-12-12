@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { InitialSetup } from './InitialSetup';
+import { useQuery } from '@tanstack/react-query';
 
 interface SetupManagerProps {
   onSetupComplete: () => void;
@@ -10,20 +11,17 @@ export const SetupManager = ({ onSetupComplete }: SetupManagerProps) => {
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
 
-  useEffect(() => {
-    checkSetupStatus();
-  }, []);
-
-  const checkSetupStatus = async () => {
-    try {
-      console.log('Checking setup status...');
+  const { data: profile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      console.log('Fetching user profile for setup status...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('No user found');
-        return;
+        throw new Error('No user found');
       }
 
-      const { data: profile, error } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("has_completed_setup")
         .eq("id", user.id)
@@ -34,19 +32,25 @@ export const SetupManager = ({ onSetupComplete }: SetupManagerProps) => {
         throw error;
       }
 
-      console.log('Setup status:', profile?.has_completed_setup);
-      setNeedsSetup(!profile?.has_completed_setup);
-      
-      if (profile?.has_completed_setup) {
+      console.log('Setup status from profile:', data?.has_completed_setup);
+      return data;
+    },
+    retry: false,
+    staleTime: Infinity, // Don't refetch unnecessarily
+    onSuccess: (data) => {
+      console.log('Profile data fetched successfully:', data);
+      setNeedsSetup(!data?.has_completed_setup);
+      setLoading(false);
+      if (data?.has_completed_setup) {
         console.log('Setup already completed, notifying parent');
         onSetupComplete();
       }
-    } catch (error) {
-      console.error('Error checking setup status:', error);
-    } finally {
+    },
+    onError: (error) => {
+      console.error('Error fetching profile:', error);
       setLoading(false);
     }
-  };
+  });
 
   if (loading) {
     console.log('Loading setup status...');
