@@ -6,7 +6,7 @@ import { DreamJournalMain } from '@/components/DreamJournalMain';
 import { useQuery } from '@tanstack/react-query';
 
 const Index = () => {
-  const [showSetup, setShowSetup] = useState(false);  // Changed default to false
+  const [showSetup, setShowSetup] = useState(false);
 
   // Fetch user profile to check setup status
   const { data: profile, isLoading } = useQuery({
@@ -25,16 +25,21 @@ const Index = () => {
         .eq('id', user.id)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
       console.log('Profile setup status:', data?.has_completed_setup);
       return data;
-    }
+    },
+    retry: false
   });
 
   useEffect(() => {
-    if (profile !== undefined) {  // Only set state when we have profile data
-      console.log('Setting showSetup based on profile:', !profile?.has_completed_setup);
-      setShowSetup(!profile?.has_completed_setup);
+    if (profile !== undefined) {
+      const needsSetup = !profile?.has_completed_setup;
+      console.log('Setting showSetup based on profile:', needsSetup);
+      setShowSetup(needsSetup);
     }
   }, [profile]);
 
