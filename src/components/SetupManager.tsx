@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { InitialSetup } from './InitialSetup';
 import { useQuery } from '@tanstack/react-query';
@@ -37,18 +37,21 @@ export const SetupManager = ({ onSetupComplete }: SetupManagerProps) => {
     },
     retry: false,
     staleTime: Infinity, // Don't refetch unnecessarily
-    onSuccess: (data) => {
-      console.log('Profile data fetched successfully:', data);
-      setNeedsSetup(!data?.has_completed_setup);
-      setLoading(false);
-      if (data?.has_completed_setup) {
-        console.log('Setup already completed, notifying parent');
-        onSetupComplete();
+    gcTime: 0,
+    meta: {
+      onSuccess: (data: { has_completed_setup: boolean }) => {
+        console.log('Profile data fetched successfully:', data);
+        setNeedsSetup(!data?.has_completed_setup);
+        setLoading(false);
+        if (data?.has_completed_setup) {
+          console.log('Setup already completed, notifying parent');
+          onSetupComplete();
+        }
+      },
+      onError: (error: Error) => {
+        console.error('Error fetching profile:', error);
+        setLoading(false);
       }
-    },
-    onError: (error) => {
-      console.error('Error fetching profile:', error);
-      setLoading(false);
     }
   });
 
