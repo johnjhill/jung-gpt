@@ -55,7 +55,7 @@ const Index = () => {
       console.log('Profile setup status:', data?.has_completed_setup);
       return data;
     },
-    enabled: !!session?.user?.id, // Only run query if we have a session
+    enabled: !!session?.user?.id,
     retry: false,
     staleTime: 0,
     gcTime: 0,
