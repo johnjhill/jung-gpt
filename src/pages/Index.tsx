@@ -7,8 +7,26 @@ import { useQuery } from '@tanstack/react-query';
 
 const Index = () => {
   const [showSetup, setShowSetup] = useState(false);
+  const [session, setSession] = useState<any>(null);
 
-  // Fetch user profile to check setup status
+  // First check if we have a session
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Current session:', session ? 'Active' : 'None');
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed:', _event);
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch user profile only when we have a session
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
@@ -34,8 +52,8 @@ const Index = () => {
     },
     retry: false,
     staleTime: 0,
-    gcTime: 0, // Changed from cacheTime to gcTime
-    enabled: true // Only run query when component mounts
+    gcTime: 0,
+    enabled: !!session // Only run query when we have a session
   });
 
   useEffect(() => {
