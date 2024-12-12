@@ -11,34 +11,61 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session ? 'Logged in' : 'Not logged in');
-      setSession(session);
-      setLoading(false);
-    });
+    const initSession = async () => {
+      try {
+        console.log('Checking initial session...');
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setSession(null);
+          return;
+        }
+
+        console.log('Initial session check:', currentSession ? 'Logged in' : 'Not logged in');
+        setSession(currentSession);
+      } catch (error) {
+        console.error('Error in session check:', error);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initSession();
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event);
-      setSession(session);
-      if (session) {
-        console.log('User signed in:', session.user.id);
+    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('Auth state changed:', event);
+      setSession(currentSession);
+      
+      if (currentSession) {
+        console.log('User signed in:', currentSession.user.id);
         navigate('/');
+      } else {
+        console.log('No session found');
+        setSession(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   if (loading) {
+    console.log('Loading auth state...');
     return <AuthLoading />;
   }
 
   if (!session) {
+    console.log('No session, showing auth form');
     return <AuthForm />;
   }
 
+  console.log('Session found, rendering protected content');
   return <>{children}</>;
 };
