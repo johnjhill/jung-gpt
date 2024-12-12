@@ -4,27 +4,41 @@ import { DreamJournalHeader } from '@/components/DreamJournalHeader';
 import { SetupManager } from '@/components/SetupManager';
 import { DreamJournalMain } from '@/components/DreamJournalMain';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [showSetup, setShowSetup] = useState(false);
   const [session, setSession] = useState<any>(null);
+  const navigate = useNavigate();
 
   // First check if we have a session
   useEffect(() => {
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Current session:', session ? 'Active' : 'None');
+      console.log('Initial session check:', session ? 'Logged in' : 'Not logged in');
+      if (!session) {
+        console.log('No session found, redirecting to auth...');
+        navigate('/');
+        return;
+      }
       setSession(session);
     });
 
+    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('Auth state changed:', _event);
+      if (!session) {
+        console.log('Session ended, redirecting to auth...');
+        navigate('/');
+        return;
+      }
       setSession(session);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   // Fetch user profile only when we have a session
   const { data: profile, isLoading, refetch } = useQuery({
