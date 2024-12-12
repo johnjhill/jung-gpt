@@ -8,17 +8,36 @@ import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [showSetup, setShowSetup] = useState(false);
+  const [session, setSession] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get initial session
+    const getInitialSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      console.log('Initial session check:', currentSession ? 'Session found' : 'No session');
+      setSession(currentSession);
+    };
+    
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      console.log('Auth state changed:', _event);
+      setSession(currentSession);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
       console.log('Fetching user profile...');
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      if (!session?.user?.id) {
         console.log('No active session found');
-        navigate('/');
         return null;
       }
 
@@ -36,6 +55,7 @@ const Index = () => {
       console.log('Profile setup status:', data?.has_completed_setup);
       return data;
     },
+    enabled: !!session?.user?.id, // Only run query if we have a session
     retry: false,
     staleTime: 0,
     gcTime: 0,
@@ -49,7 +69,7 @@ const Index = () => {
     }
   }, [profile]);
 
-  if (isLoading) {
+  if (isLoading || !session) {
     return null;
   }
 
