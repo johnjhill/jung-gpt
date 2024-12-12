@@ -34,7 +34,8 @@ const Index = () => {
     },
     retry: false,
     staleTime: 0,
-    cacheTime: 0
+    gcTime: 0, // Changed from cacheTime to gcTime
+    enabled: true // Only run query when component mounts
   });
 
   useEffect(() => {
