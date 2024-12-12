@@ -22,8 +22,24 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        console.log('Initial session check:', currentSession ? 'Logged in' : 'Not logged in');
-        setSession(currentSession);
+        if (currentSession) {
+          console.log('Initial session found:', currentSession.user.id);
+          // Refresh the session to ensure it's valid
+          const { data: { session: refreshedSession }, error: refreshError } = 
+            await supabase.auth.refreshSession();
+          
+          if (refreshError) {
+            console.error('Error refreshing session:', refreshError);
+            setSession(null);
+            return;
+          }
+
+          console.log('Session refreshed successfully');
+          setSession(refreshedSession);
+        } else {
+          console.log('No initial session found');
+          setSession(null);
+        }
       } catch (error) {
         console.error('Error in session check:', error);
         setSession(null);
@@ -39,10 +55,10 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('Auth state changed:', event);
-      setSession(currentSession);
       
       if (currentSession) {
         console.log('User signed in:', currentSession.user.id);
+        setSession(currentSession);
         navigate('/');
       } else {
         console.log('No session found');
