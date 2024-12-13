@@ -4,11 +4,12 @@ import { ChartBar, Crown, Lock, Loader2 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export const UsageTracker = () => {
   const { toast } = useToast();
   
-  const { data: usageData } = useQuery({
+  const { data: usageData, refetch: refetchUsage } = useQuery({
     queryKey: ['dreamUsage'],
     queryFn: async () => {
       console.log('Fetching dream usage data...');
@@ -28,7 +29,8 @@ export const UsageTracker = () => {
         count: dreams?.length || 0,
         limit: 3 // Free tier limit
       };
-    }
+    },
+    refetchInterval: 5000, // Refetch every 5 seconds to keep usage up to date
   });
 
   const { data: profile } = useQuery({
@@ -83,11 +85,32 @@ export const UsageTracker = () => {
     }
   };
 
+  useEffect(() => {
+    // Check if user has exceeded free tier limit
+    if (profile?.subscription_tier === 'free' && usageData?.count >= usageData?.limit) {
+      toast({
+        title: "Free Tier Limit Reached",
+        description: "You've reached your monthly limit for dream analysis. Upgrade to Premium to continue analyzing dreams!",
+        variant: "default",
+        action: (
+          <Button 
+            onClick={handleUpgradeClick}
+            className="bg-dream-purple hover:bg-dream-purple/90 text-white gap-2"
+          >
+            <Crown className="h-4 w-4" />
+            Upgrade
+          </Button>
+        ),
+      });
+    }
+  }, [usageData?.count, profile?.subscription_tier]);
+
   if (!usageData || !profile) return null;
 
   const isFreeTier = profile.subscription_tier === 'free';
   const usagePercentage = isFreeTier ? (usageData.count / usageData.limit) * 100 : 0;
   const shouldPromptUpgrade = isFreeTier && usagePercentage >= 66;
+  const hasReachedLimit = isFreeTier && usageData.count >= usageData.limit;
 
   return (
     <Card className="p-4 bg-white/80 backdrop-blur-sm mb-6">
@@ -116,21 +139,25 @@ export const UsageTracker = () => {
           <div className="mb-2">
             <div className="text-sm text-gray-600 mb-1">
               {usageData.count} of {usageData.limit} dreams this month
+              {hasReachedLimit && (
+                <span className="text-red-500 ml-2">(Limit reached)</span>
+              )}
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full">
               <div
-                className="h-full bg-dream-purple rounded-full transition-all"
+                className={`h-full rounded-full transition-all ${
+                  hasReachedLimit ? 'bg-red-500' : 'bg-dream-purple'
+                }`}
                 style={{ width: `${Math.min(usagePercentage, 100)}%` }}
               />
             </div>
           </div>
           
-          {shouldPromptUpgrade && (
+          {(shouldPromptUpgrade || hasReachedLimit) && (
             <div className="mt-4">
               <Button
                 onClick={handleUpgradeClick}
                 className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white"
-                disabled={false}
               >
                 <Crown className="mr-2 h-4 w-4" />
                 Upgrade to Premium
