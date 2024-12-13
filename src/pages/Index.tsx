@@ -4,12 +4,10 @@ import { DreamJournalHeader } from '@/components/DreamJournalHeader';
 import { SetupManager } from '@/components/SetupManager';
 import { DreamJournalMain } from '@/components/DreamJournalMain';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [showSetup, setShowSetup] = useState(false);
   const [session, setSession] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Get initial session
@@ -59,17 +57,19 @@ const Index = () => {
     retry: false,
     staleTime: 0,
     gcTime: 0,
+    meta: {
+      onSuccess: (data) => {
+        console.log('Profile data fetched:', data);
+        setShowSetup(!data?.has_completed_setup);
+      },
+      onError: (error) => {
+        console.error('Error fetching profile:', error);
+      }
+    }
   });
 
-  useEffect(() => {
-    if (profile !== undefined) {
-      const needsSetup = !profile?.has_completed_setup;
-      console.log('Setting showSetup based on profile:', needsSetup);
-      setShowSetup(needsSetup);
-    }
-  }, [profile]);
-
   if (isLoading || !session) {
+    console.log('Loading or no session...');
     return null;
   }
 
@@ -80,7 +80,10 @@ const Index = () => {
           <h1 className="text-4xl md:text-5xl font-serif text-white text-center">
             Welcome to Dream Journal
           </h1>
-          <SetupManager onSetupComplete={() => setShowSetup(false)} />
+          <SetupManager onSetupComplete={() => {
+            console.log('Setup completed, showing main content');
+            setShowSetup(false);
+          }} />
         </div>
       ) : (
         <>
