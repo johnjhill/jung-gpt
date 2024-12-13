@@ -9,7 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { UpgradePrompt } from "./UpgradePrompt";
 
-export const DreamEditor = () => {
+interface DreamEditorProps {
+  onSubmit?: (dream: string) => Promise<void>;
+}
+
+export const DreamEditor = ({ onSubmit }: DreamEditorProps) => {
   const [dreamContent, setDreamContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -86,6 +90,10 @@ export const DreamEditor = () => {
       const summary = await generateDreamSummary(dreamContent);
 
       await saveDreamWithInitialAnalysis(dreamContent, user.id, analysis, summary);
+
+      if (onSubmit) {
+        await onSubmit(dreamContent);
+      }
 
       toast({
         title: "Dream Recorded",
