@@ -19,6 +19,29 @@ const DreamCardButtons = ({
 }: DreamCardButtonsProps) => {
   const { toast } = useToast();
 
+  const { data: usageData } = useQuery({
+    queryKey: ['dreamUsage'],
+    queryFn: async () => {
+      console.log('Fetching dream usage data...');
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      const { data: dreams, error } = await supabase
+        .from('dreams')
+        .select('created_at')
+        .gte('created_at', startOfMonth.toISOString());
+        
+      if (error) throw error;
+      console.log('Dreams this month:', dreams?.length);
+      
+      return {
+        count: dreams?.length || 0,
+        limit: 3 // Free tier limit
+      };
+    }
+  });
+
   const { data: profile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
@@ -41,10 +64,10 @@ const DreamCardButtons = ({
 
   const handleAnalysisClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (profile?.subscription_tier === 'free') {
+    if (profile?.subscription_tier === 'free' && usageData && usageData.count >= usageData.limit) {
       toast({
         title: "Premium Feature",
-        description: "Upgrade to Premium to analyze more dreams and unlock all features!",
+        description: "You've reached your monthly limit. Upgrade to Premium to analyze more dreams!",
         variant: "default",
         action: <UpgradePrompt />
       });

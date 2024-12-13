@@ -1,31 +1,20 @@
-import { useState } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Loader2, Crown } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Send } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { analyzeDreamContent, generateDreamSummary } from "@/services/dreamSubmission";
+import { saveDreamWithInitialAnalysis } from "@/services/dreamAnalysis";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { UpgradePrompt } from "./UpgradePrompt";
 
-interface DreamEditorProps {
-  onSubmit: (content: string) => void;
-}
-
-export const DreamEditor = ({ onSubmit }: DreamEditorProps) => {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+export const DreamEditor = () => {
+  const [dreamContent, setDreamContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: '',
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-none focus:outline-none',
-      },
-    },
-  });
 
+  // Fetch dream usage data
   const { data: usageData } = useQuery({
     queryKey: ['dreamUsage'],
     queryFn: async () => {
@@ -40,16 +29,21 @@ export const DreamEditor = ({ onSubmit }: DreamEditorProps) => {
         .gte('created_at', startOfMonth.toISOString());
         
       if (error) throw error;
+      console.log('Dreams this month:', dreams?.length);
+      
       return {
         count: dreams?.length || 0,
-        limit: 3
+        limit: 3 // Free tier limit
       };
-    }
+    },
+    refetchInterval: 5000,
   });
 
+  // Fetch user profile
   const { data: profile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
+      console.log('Fetching user profile...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
       
@@ -60,95 +54,82 @@ export const DreamEditor = ({ onSubmit }: DreamEditorProps) => {
         .single();
         
       if (error) throw error;
+      console.log('User subscription tier:', data.subscription_tier);
+      
       return data;
     }
   });
 
-  const handleUpgradeClick = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No session found');
-      }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dreamContent.trim()) return;
 
-      console.log('Creating checkout session...');
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {},
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        console.log('Redirecting to checkout:', data.url);
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL received');
-      }
-    } catch (error) {
-      console.error('Error starting checkout:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start checkout process",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!editor || !editor.getText().trim()) return;
-
-    const isFreeTier = profile?.subscription_tier === 'free';
-    const hasReachedLimit = isFreeTier && (usageData?.count || 0) >= (usageData?.limit || 3);
-
-    if (hasReachedLimit) {
+    // Check if user has reached free tier limit
+    if (profile?.subscription_tier === 'free' && usageData && usageData.count >= usageData.limit) {
       toast({
         title: "Free Tier Limit Reached",
         description: "You've reached your monthly limit for dream analysis. Upgrade to Premium to continue analyzing dreams!",
         variant: "default",
-        action: (
-          <Button 
-            onClick={handleUpgradeClick}
-            className="bg-dream-purple hover:bg-dream-purple/90 text-white gap-2"
-          >
-            <Crown className="h-4 w-4" />
-            Upgrade
-          </Button>
-        ),
+        action: <UpgradePrompt />
       });
       return;
     }
 
-    setIsAnalyzing(true);
     try {
-      await onSubmit(editor.getText());
+      setIsSubmitting(true);
+      console.log('Analyzing dream content...');
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      const analysis = await analyzeDreamContent(dreamContent);
+      const summary = await generateDreamSummary(dreamContent);
+
+      await saveDreamWithInitialAnalysis(dreamContent, user.id, analysis, summary);
+
+      toast({
+        title: "Dream Recorded",
+        description: "Your dream has been saved and analyzed.",
+      });
+
+      setDreamContent("");
+    } catch (error) {
+      console.error('Error submitting dream:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save and analyze your dream. Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setIsAnalyzing(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg">
-      <div className="mb-4">
-        <h2 className="text-2xl font-serif text-dream-purple mb-2">Record Your Dream</h2>
-        <p className="text-gray-600 mb-4">Write down your dream in as much detail as you remember...</p>
-      </div>
-      <div className="min-h-[200px] mb-4 p-4 border rounded-md bg-white">
-        <EditorContent editor={editor} />
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Textarea
+        value={dreamContent}
+        onChange={(e) => setDreamContent(e.target.value)}
+        placeholder="Describe your dream..."
+        className="min-h-[200px] bg-white/80 backdrop-blur-sm"
+      />
       <Button 
-        onClick={handleSubmit}
+        type="submit" 
+        disabled={!dreamContent.trim() || isSubmitting}
         className="w-full bg-dream-purple hover:bg-dream-purple/90 text-white"
-        disabled={isAnalyzing}
       >
-        {isAnalyzing ? (
+        {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Analyzing Dream...
           </>
         ) : (
-          'Analyze Dream'
+          <>
+            <Send className="mr-2 h-4 w-4" />
+            Analyze Dream
+          </>
         )}
       </Button>
-    </Card>
+    </form>
   );
 };
