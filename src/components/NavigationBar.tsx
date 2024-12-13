@@ -22,7 +22,6 @@ const NavigationBar = () => {
     };
     getUser();
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
       setUserEmail(session?.user?.email || null);
@@ -56,10 +55,10 @@ const NavigationBar = () => {
   };
 
   return (
-    <nav className="w-full bg-white/80 backdrop-blur-sm border-b py-4 px-6 mb-8">
+    <nav className="w-full bg-white/10 backdrop-blur-md border-b border-white/20 py-4 px-6 mb-8">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-serif text-dream-purple hover:text-dream-purple/90 transition-colors">
-          Dream Mosaic
+        <Link to="/" className="text-3xl font-serif text-white hover:text-white/90 transition-colors tracking-wide">
+          Jung GPT
         </Link>
 
         <div className="flex items-center gap-6">
@@ -71,7 +70,7 @@ const NavigationBar = () => {
                     <Link to="/history">
                       <NavigationMenuLink 
                         className={cn(
-                          "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                          "group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 focus:bg-white/10 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-white/10 data-[state=open]:bg-white/10"
                         )}
                       >
                         <History className="mr-2 h-4 w-4" />
@@ -83,7 +82,7 @@ const NavigationBar = () => {
                     <Link to="/preferences">
                       <NavigationMenuLink 
                         className={cn(
-                          "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                          "group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 focus:bg-white/10 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-white/10 data-[state=open]:bg-white/10"
                         )}
                       >
                         <Bell className="mr-2 h-4 w-4" />
@@ -99,20 +98,20 @@ const NavigationBar = () => {
           {userEmail && (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <Avatar>
+                <Avatar className="border border-white/20">
                   <AvatarFallback className="bg-dream-purple text-white">
                     <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium">{userEmail}</span>
+                <span className="text-sm font-medium text-white">{userEmail}</span>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleSignOut}
-                className="hover:bg-red-100"
+                className="hover:bg-white/10 text-white"
               >
-                <LogOut className="h-4 w-4 text-red-600" />
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           )}

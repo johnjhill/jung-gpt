@@ -3,9 +3,10 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 
 export const AuthForm = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-dream-blue via-dream-purple to-dream-lavender p-4">
-    <div className="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-xl">
-      <h1 className="text-4xl font-serif text-dream-blue text-center mb-8">Jung GPT</h1>
+  <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-dream-blue via-dream-purple to-black p-4">
+    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0ic3RhcnMiIHg9IjAiIHk9IjAiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4yKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNzdGFycykiLz48L3N2Zz4=')] opacity-50 mix-blend-overlay pointer-events-none"></div>
+    <div className="w-full max-w-md bg-white/10 backdrop-blur-md p-8 rounded-lg shadow-xl border border-white/20">
+      <h1 className="text-4xl font-serif text-white text-center mb-8">Jung GPT</h1>
       <Auth
         supabaseClient={supabase}
         appearance={{
@@ -15,34 +16,35 @@ export const AuthForm = () => (
               colors: {
                 brand: '#663399',
                 brandAccent: '#191970',
-                inputBackground: 'white',
-                inputText: 'black',
-                inputPlaceholder: '#666666',
-                messageText: '#191970',
-                messageBackground: '#E6E6FA',
-                anchorTextColor: '#191970',
-                dividerBackground: '#663399',
+                inputBackground: 'rgba(255, 255, 255, 0.1)',
+                inputText: 'white',
+                inputPlaceholder: 'rgba(255, 255, 255, 0.5)',
+                messageText: 'white',
+                messageBackground: 'rgba(255, 255, 255, 0.1)',
+                anchorTextColor: 'white',
+                dividerBackground: 'rgba(255, 255, 255, 0.2)',
               },
             },
           },
           style: {
-            input: {
-              backgroundColor: 'white',
-              color: 'black',
-            },
-            label: {
-              color: '#191970',
-              fontWeight: '500',
-            },
             button: {
-              backgroundColor: 'white',
-              color: '#191970',
-              borderColor: '#663399',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              borderColor: 'rgba(255, 255, 255, 0.2)',
               fontWeight: '500',
             },
             anchor: {
-              color: '#191970',
+              color: 'white',
               fontWeight: '500',
+            },
+            container: {
+              color: 'white',
+            },
+            label: {
+              color: 'white',
+            },
+            message: {
+              color: 'white',
             },
           },
         }}
