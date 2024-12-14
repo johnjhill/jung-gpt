@@ -62,10 +62,10 @@ const DreamCardButtons = ({
     }
   });
 
-  const handleAnalysisClick = async (e: React.MouseEvent) => {
+  const handleAnalysisGeneration = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Only check usage limits for generating new analyses
+    // Check usage limits only for generating new analyses
     if (!hasFinalAnalysis && 
         profile?.subscription_tier === 'free' && 
         usageData && 
@@ -78,6 +78,7 @@ const DreamCardButtons = ({
       });
       return;
     }
+    
     await handleViewAnalysis(dreamId);
   };
 
@@ -86,7 +87,7 @@ const DreamCardButtons = ({
       <DreamAnalysisButtons
         dreamId={dreamId}
         loadingDreamId={loadingDreamId}
-        handleViewAnalysis={handleViewAnalysis}
+        handleViewAnalysis={handleAnalysisGeneration}
       />
     </div>
   );
