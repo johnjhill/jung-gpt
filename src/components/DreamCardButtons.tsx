@@ -64,7 +64,12 @@ const DreamCardButtons = ({
 
   const handleAnalysisClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!hasFinalAnalysis && profile?.subscription_tier === 'free' && usageData && usageData.count >= usageData.limit) {
+    
+    // Only check usage limits for generating new analyses
+    if (!hasFinalAnalysis && 
+        profile?.subscription_tier === 'free' && 
+        usageData && 
+        usageData.count >= usageData.limit) {
       toast({
         title: "Premium Feature",
         description: "You've reached your monthly limit. Upgrade to Premium to analyze more dreams!",
@@ -78,13 +83,11 @@ const DreamCardButtons = ({
 
   return (
     <div className="flex flex-wrap gap-4 mt-6" onClick={(e) => e.stopPropagation()}>
-      {hasFinalAnalysis && (
-        <DreamAnalysisButtons
-          dreamId={dreamId}
-          loadingDreamId={loadingDreamId}
-          handleViewAnalysis={handleViewAnalysis}
-        />
-      )}
+      <DreamAnalysisButtons
+        dreamId={dreamId}
+        loadingDreamId={loadingDreamId}
+        handleViewAnalysis={handleViewAnalysis}
+      />
     </div>
   );
 };
