@@ -26,7 +26,7 @@ export const DreamAnalysisButtons = ({
         className="bg-dream-purple hover:bg-dream-purple/90 text-white"
       >
         <ArrowRight className="mr-2 h-4 w-4" />
-        View Dream Details
+        View Full Analysis
       </Button>
       
       <Button
@@ -46,7 +46,7 @@ export const DreamAnalysisButtons = ({
         ) : (
           <>
             <BookOpen className="mr-2 h-4 w-4" />
-            Generate Analysis
+            See Final Analysis
           </>
         )}
       </Button>
