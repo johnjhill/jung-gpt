@@ -53,7 +53,7 @@ export const updateDreamWithFinalAnalysis = async (
       .from('dreams')
       .select('analysis')
       .eq('id', dreamId)
-      .maybeSingle();
+      .single();
 
     if (fetchError) throw fetchError;
     if (!currentDream) {
@@ -69,15 +69,18 @@ export const updateDreamWithFinalAnalysis = async (
       skipped: skipped || false
     };
 
+    console.log('Updating dream analysis:', updatedAnalysis);
+
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
-        analysis: updatedAnalysis as unknown as Json
+        analysis: updatedAnalysis as unknown as Json,
+        updated_at: new Date().toISOString()
       })
       .eq('id', dreamId);
 
     if (updateError) throw updateError;
-    console.log('Dream updated successfully');
+    console.log('Dream updated successfully with final analysis');
     return true;
   } catch (error) {
     console.error('Error updating dream:', error);

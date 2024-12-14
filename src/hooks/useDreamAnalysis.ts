@@ -31,6 +31,7 @@ export const useDreamAnalysis = () => {
       const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, analysisResponse, summary);
       if (!dreamRecord) throw new Error('Failed to save dream');
       
+      await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
       
       setCurrentDreamId(dreamRecord.id);
@@ -51,11 +52,12 @@ export const useDreamAnalysis = () => {
       const response = await generateFinalAnalysis(analysis!, answers);
       
       if (currentDreamId) {
+        console.log('Updating dream with final analysis:', response.finalAnalysis);
         const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, answers);
         if (!success) throw new Error('Failed to update dream with final analysis');
+        
+        await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       }
-      
-      await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
       
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
@@ -74,11 +76,12 @@ export const useDreamAnalysis = () => {
       const response = await generateFinalAnalysis(analysis!, undefined, true);
       
       if (currentDreamId) {
+        console.log('Updating dream with skipped final analysis:', response.finalAnalysis);
         const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
         if (!success) throw new Error('Failed to update dream with final analysis');
+        
+        await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       }
-      
-      await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
       
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);

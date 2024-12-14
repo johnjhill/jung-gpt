@@ -38,21 +38,21 @@ const DreamCard = ({ dream, loadingDreamId, handleViewAnalysis }: DreamCardProps
         </p>
       </div>
       <div className="prose prose-sm">
-        <p className="text-gray-700 mb-4">{dream.dream_content}</p>
+        <p className="text-gray-700 mb-4 line-clamp-3">{dream.dream_content}</p>
         
         {dream.analysis && (
           <div className="mt-4">
             {dream.analysis.finalAnalysis ? (
               <>
                 <h4 className="text-lg font-serif mb-2 text-gray-900">Dream Analysis</h4>
-                <p className="text-gray-700 mb-6">
+                <p className="text-gray-700 mb-6 line-clamp-4">
                   {dream.analysis.finalAnalysis}
                 </p>
               </>
-            ) : (
+            ) : dream.analysis.initialAnalysis && (
               <>
-                <h4 className="text-lg font-serif mb-2 text-gray-900">Dream Analysis</h4>
-                <p className="text-gray-700 mb-4">
+                <h4 className="text-lg font-serif mb-2 text-gray-900">Initial Analysis</h4>
+                <p className="text-gray-700 mb-4 line-clamp-3">
                   {dream.analysis.initialAnalysis}
                 </p>
               </>
