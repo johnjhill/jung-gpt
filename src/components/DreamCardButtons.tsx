@@ -64,7 +64,7 @@ const DreamCardButtons = ({
 
   const handleAnalysisClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (profile?.subscription_tier === 'free' && usageData && usageData.count >= usageData.limit) {
+    if (!hasFinalAnalysis && profile?.subscription_tier === 'free' && usageData && usageData.count >= usageData.limit) {
       toast({
         title: "Premium Feature",
         description: "You've reached your monthly limit. Upgrade to Premium to analyze more dreams!",
@@ -82,7 +82,7 @@ const DreamCardButtons = ({
         <DreamAnalysisButtons
           dreamId={dreamId}
           loadingDreamId={loadingDreamId}
-          handleViewAnalysis={() => handleViewAnalysis(dreamId)}
+          handleViewAnalysis={handleViewAnalysis}
         />
       )}
     </div>
