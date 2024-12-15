@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { UpgradePrompt } from './UpgradePrompt';
 import { DreamAnalysisButtons } from './DreamAnalysisButtons';
+import { Button } from './ui/button';
+import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface DreamCardButtonsProps {
   dreamId: string;
@@ -18,6 +21,7 @@ const DreamCardButtons = ({
   handleViewAnalysis 
 }: DreamCardButtonsProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: usageData } = useQuery({
     queryKey: ['dreamUsage'],
@@ -62,8 +66,7 @@ const DreamCardButtons = ({
     }
   });
 
-  const handleAnalysisClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleAnalysisClick = async () => {
     if (!hasFinalAnalysis && profile?.subscription_tier === 'free' && usageData && usageData.count >= usageData.limit) {
       toast({
         title: "Premium Feature",
@@ -78,11 +81,20 @@ const DreamCardButtons = ({
 
   return (
     <div className="flex flex-wrap gap-4 mt-6" onClick={(e) => e.stopPropagation()}>
+      <Button
+        onClick={() => navigate(`/dream/${dreamId}`)}
+        variant="default"
+        className="bg-dream-purple hover:bg-dream-purple/90 text-white"
+      >
+        <ArrowRight className="mr-2 h-4 w-4" />
+        View Dream Details
+      </Button>
+
       {hasFinalAnalysis && (
         <DreamAnalysisButtons
           dreamId={dreamId}
           loadingDreamId={loadingDreamId}
-          handleViewAnalysis={handleViewAnalysis}
+          handleViewAnalysis={handleAnalysisClick}
         />
       )}
     </div>
