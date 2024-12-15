@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthLoading } from './auth/AuthLoading';
 import { AuthForm } from './auth/AuthForm';
 
 export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -59,7 +60,10 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
       if (currentSession) {
         console.log('User signed in:', currentSession.user.id);
         setSession(currentSession);
-        navigate('/');
+        // Only navigate to home if we're on the root path
+        if (location.pathname === '/') {
+          navigate('/', { replace: true });
+        }
       } else {
         console.log('No session found');
         setSession(null);
@@ -70,7 +74,7 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
       console.log('Cleaning up auth subscription');
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   if (loading) {
     console.log('Loading auth state...');
