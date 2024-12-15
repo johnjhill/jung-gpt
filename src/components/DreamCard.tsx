@@ -25,11 +25,17 @@ interface DreamCardProps {
 const DreamCard = ({ dream, loadingDreamId, handleViewAnalysis }: DreamCardProps) => {
   const navigate = useNavigate();
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/dream/${dream.id}`);
+  };
+
   return (
     <Card 
       key={dream.id} 
       className="p-6 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all cursor-pointer"
-      onClick={() => navigate(`/dream/${dream.id}`)}
+      onClick={handleCardClick}
     >
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-2xl font-serif text-gray-900">{dream.summary}</h2>

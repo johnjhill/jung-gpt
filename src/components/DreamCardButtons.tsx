@@ -79,10 +79,16 @@ const DreamCardButtons = ({
     await handleViewAnalysis(dreamId);
   };
 
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/dream/${dreamId}`);
+  };
+
   return (
     <div className="flex flex-wrap gap-4 mt-6" onClick={(e) => e.stopPropagation()}>
       <Button
-        onClick={() => navigate(`/dream/${dreamId}`)}
+        onClick={handleViewDetails}
         variant="default"
         className="bg-dream-purple hover:bg-dream-purple/90 text-white"
       >
