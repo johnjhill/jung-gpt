@@ -22,6 +22,7 @@ export const useDreamAnalysis = () => {
 
   const handleDreamSubmit = async (dream: string) => {
     try {
+      console.log('Starting dream submission process...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -31,6 +32,7 @@ export const useDreamAnalysis = () => {
       const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, analysisResponse, summary);
       if (!dreamRecord) throw new Error('Failed to save dream');
       
+      console.log('Dream saved successfully:', dreamRecord.id);
       await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
       
@@ -49,6 +51,7 @@ export const useDreamAnalysis = () => {
 
   const handleAnswerSubmit = async (answers: string[]) => {
     try {
+      console.log('Generating final analysis with answers...');
       const response = await generateFinalAnalysis(analysis!, answers);
       
       if (currentDreamId) {
@@ -73,6 +76,7 @@ export const useDreamAnalysis = () => {
 
   const handleSkip = async () => {
     try {
+      console.log('Generating final analysis with skip option...');
       const response = await generateFinalAnalysis(analysis!, undefined, true);
       
       if (currentDreamId) {
