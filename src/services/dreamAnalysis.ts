@@ -47,7 +47,7 @@ export const updateDreamWithFinalAnalysis = async (
   answers?: string[],
   skipped?: boolean
 ): Promise<boolean> => {
-  console.log('Updating dream with final analysis...');
+  console.log('Updating dream with final analysis...', { dreamId, finalAnalysis });
   try {
     const { data: currentDream, error: fetchError } = await supabase
       .from('dreams')
@@ -79,7 +79,11 @@ export const updateDreamWithFinalAnalysis = async (
       })
       .eq('id', dreamId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Error updating dream:', updateError);
+      throw updateError;
+    }
+    
     console.log('Dream updated successfully with final analysis');
     return true;
   } catch (error) {
