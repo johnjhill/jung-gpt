@@ -7,7 +7,11 @@ export const generateDreamSummary = async (dreamContent: string) => {
       body: { dreamContent }
     });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error in generateDreamSummary:', error);
+      throw error;
+    }
+    
     console.log('Generated summary:', response.summary);
     return response.summary;
   } catch (error) {
@@ -22,7 +26,11 @@ export const analyzeDreamContent = async (dreamContent: string) => {
     body: { dreamContent }
   });
   
-  if (error) throw error;
+  if (error) {
+    console.error('Error in analyzeDreamContent:', error);
+    throw error;
+  }
+  
   console.log('Received analysis:', response);
   return response;
 };
@@ -32,7 +40,12 @@ export const generateFinalAnalysis = async (
   answers?: string[],
   skipQuestions?: boolean
 ) => {
-  console.log('Generating final analysis...');
+  console.log('Generating final analysis...', {
+    hasAnalysis: !!analysis,
+    answersLength: answers?.length,
+    skipQuestions
+  });
+  
   const { data: response, error } = await supabase.functions.invoke('analyzeDream', {
     body: { 
       previousAnalysis: analysis,
@@ -41,7 +54,11 @@ export const generateFinalAnalysis = async (
     }
   });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error in generateFinalAnalysis:', error);
+    throw error;
+  }
+  
   console.log('Received final analysis:', response);
   return response;
 };

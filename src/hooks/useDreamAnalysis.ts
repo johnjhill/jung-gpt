@@ -51,16 +51,25 @@ export const useDreamAnalysis = () => {
 
   const handleAnswerSubmit = async (answers: string[]) => {
     try {
-      console.log('Generating final analysis with answers...');
-      const response = await generateFinalAnalysis(analysis!, answers);
-      
-      if (currentDreamId) {
-        console.log('Updating dream with final analysis:', response.finalAnalysis);
-        const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, answers);
-        if (!success) throw new Error('Failed to update dream with final analysis');
-        
-        await queryClient.invalidateQueries({ queryKey: ['dreams'] });
+      if (!analysis || !currentDreamId) {
+        throw new Error('Missing required data for final analysis');
       }
+
+      console.log('Generating final analysis with answers...', {
+        currentDreamId,
+        answersLength: answers.length
+      });
+
+      const response = await generateFinalAnalysis(analysis, answers);
+      console.log('Final analysis generated:', response);
+      
+      const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, answers);
+      if (!success) {
+        throw new Error('Failed to update dream with final analysis');
+      }
+      
+      console.log('Dream updated successfully with final analysis');
+      await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
@@ -76,16 +85,20 @@ export const useDreamAnalysis = () => {
 
   const handleSkip = async () => {
     try {
-      console.log('Generating final analysis with skip option...');
-      const response = await generateFinalAnalysis(analysis!, undefined, true);
-      
-      if (currentDreamId) {
-        console.log('Updating dream with skipped final analysis:', response.finalAnalysis);
-        const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
-        if (!success) throw new Error('Failed to update dream with final analysis');
-        
-        await queryClient.invalidateQueries({ queryKey: ['dreams'] });
+      if (!analysis || !currentDreamId) {
+        throw new Error('Missing required data for final analysis');
       }
+
+      console.log('Generating final analysis with skip option...');
+      const response = await generateFinalAnalysis(analysis, undefined, true);
+      
+      const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
+      if (!success) {
+        throw new Error('Failed to update dream with final analysis');
+      }
+      
+      console.log('Dream updated successfully with skipped final analysis');
+      await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
