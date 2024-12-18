@@ -56,8 +56,7 @@ export const updateDreamWithFinalAnalysis = async (
       .eq('id', dreamId)
       .single();
 
-    if (fetchError) throw fetchError;
-    if (!currentDream) {
+    if (fetchError || !currentDream) {
       console.error('No dream found with id:', dreamId);
       return false;
     }
