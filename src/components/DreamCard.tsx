@@ -50,7 +50,7 @@ const DreamCard = ({ dream, loadingDreamId, handleViewAnalysis }: DreamCardProps
           <div className="mt-4">
             {dream.analysis.finalAnalysis ? (
               <>
-                <h4 className="text-lg font-serif mb-2 text-gray-900">Dream Analysis</h4>
+                <h4 className="text-lg font-serif mb-2 text-gray-900">Final Analysis</h4>
                 <p className="text-gray-700 mb-6 line-clamp-4">
                   {dream.analysis.finalAnalysis}
                 </p>

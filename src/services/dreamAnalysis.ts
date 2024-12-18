@@ -66,7 +66,7 @@ export const updateDreamWithFinalAnalysis = async (
     const updatedAnalysis: DreamAnalysis = {
       ...currentAnalysis,
       finalAnalysis,
-      answers: answers || [],
+      answers: answers || currentAnalysis.answers || [],
       skipped: skipped || false
     };
 
