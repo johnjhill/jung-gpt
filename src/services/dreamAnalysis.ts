@@ -49,6 +49,7 @@ export const updateDreamWithFinalAnalysis = async (
 ): Promise<boolean> => {
   console.log('Updating dream with final analysis...', { dreamId, finalAnalysis });
   try {
+    // First, fetch the current dream record to get existing analysis
     const { data: currentDream, error: fetchError } = await supabase
       .from('dreams')
       .select('analysis')
@@ -61,6 +62,7 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
+    // Get the current analysis and update it with new data
     const currentAnalysis = currentDream.analysis as unknown as DreamAnalysis;
     const updatedAnalysis: DreamAnalysis = {
       ...currentAnalysis,
@@ -71,6 +73,7 @@ export const updateDreamWithFinalAnalysis = async (
 
     console.log('Updating dream analysis:', updatedAnalysis);
 
+    // Update the dream record with the new analysis
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
