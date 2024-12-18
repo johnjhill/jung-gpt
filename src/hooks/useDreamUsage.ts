@@ -20,7 +20,7 @@ export const useDreamUsage = () => {
       
       return {
         count: dreams?.length || 0,
-        limit: 3 // Free tier limit
+        limit: 20 // Updated free tier limit
       };
     },
     refetchInterval: 5000,
