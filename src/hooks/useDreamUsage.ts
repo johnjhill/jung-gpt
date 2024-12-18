@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export const FREE_TIER_LIMIT = 20;
+
 export const useDreamUsage = () => {
   return useQuery({
     queryKey: ['dreamUsage'],
@@ -20,7 +22,7 @@ export const useDreamUsage = () => {
       
       return {
         count: dreams?.length || 0,
-        limit: 20 // Updated free tier limit
+        limit: FREE_TIER_LIMIT
       };
     },
     refetchInterval: 5000,

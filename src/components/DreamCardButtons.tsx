@@ -6,6 +6,7 @@ import { DreamAnalysisButtons } from './DreamAnalysisButtons';
 import { Button } from './ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useDreamUsage } from '@/hooks/useDreamUsage';
 
 interface DreamCardButtonsProps {
   dreamId: string;
@@ -22,29 +23,7 @@ const DreamCardButtons = ({
 }: DreamCardButtonsProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const { data: usageData } = useQuery({
-    queryKey: ['dreamUsage'],
-    queryFn: async () => {
-      console.log('Fetching dream usage data...');
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-      
-      const { data: dreams, error } = await supabase
-        .from('dreams')
-        .select('created_at')
-        .gte('created_at', startOfMonth.toISOString());
-        
-      if (error) throw error;
-      console.log('Dreams this month:', dreams?.length);
-      
-      return {
-        count: dreams?.length || 0,
-        limit: 20 // Updated free tier limit
-      };
-    }
-  });
+  const { data: usageData } = useDreamUsage();
 
   const { data: profile } = useQuery({
     queryKey: ['userProfile'],

@@ -5,33 +5,11 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { useDreamUsage } from "@/hooks/useDreamUsage";
 
 export const UsageTracker = () => {
   const { toast } = useToast();
-  
-  const { data: usageData, refetch: refetchUsage } = useQuery({
-    queryKey: ['dreamUsage'],
-    queryFn: async () => {
-      console.log('Fetching dream usage data...');
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-      
-      const { data: dreams, error } = await supabase
-        .from('dreams')
-        .select('created_at')
-        .gte('created_at', startOfMonth.toISOString());
-        
-      if (error) throw error;
-      console.log('Dreams this month:', dreams?.length);
-      
-      return {
-        count: dreams?.length || 0,
-        limit: 20 // Updated free tier limit
-      };
-    },
-    refetchInterval: 5000, // Refetch every 5 seconds to keep usage up to date
-  });
+  const { data: usageData, refetch: refetchUsage } = useDreamUsage();
 
   const { data: profile } = useQuery({
     queryKey: ['userProfile'],
