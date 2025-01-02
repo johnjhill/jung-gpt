@@ -91,6 +91,7 @@ export const useDreamAnalysis = () => {
 
       console.log('Generating final analysis with skip option...');
       const response = await generateFinalAnalysis(analysis, undefined, true);
+      console.log('Final analysis generated (skipped):', response);
       
       const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
       if (!success) {
