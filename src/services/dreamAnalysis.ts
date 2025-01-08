@@ -60,7 +60,20 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
-    const currentAnalysis = currentDream.analysis as DreamAnalysis;
+    // Safely type cast the analysis data
+    const analysis = currentDream.analysis as Json;
+    if (!analysis || typeof analysis !== 'object' || Array.isArray(analysis)) {
+      console.error('Invalid analysis data structure');
+      return false;
+    }
+
+    // Verify the analysis object has the required properties
+    const currentAnalysis = analysis as unknown as DreamAnalysis;
+    if (!currentAnalysis.initialAnalysis || !currentAnalysis.questions) {
+      console.error('Analysis data missing required properties');
+      return false;
+    }
+
     const updatedAnalysis: DreamAnalysis = {
       ...currentAnalysis,
       finalAnalysis,
