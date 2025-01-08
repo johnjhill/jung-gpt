@@ -26,7 +26,7 @@ export const saveDreamWithInitialAnalysis = async (
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysisJson as unknown as Json,
+      analysis: analysisJson,
       summary: summary,
       dream_date: new Date().toISOString().split('T')[0]
     })
@@ -47,58 +47,64 @@ export const updateDreamWithFinalAnalysis = async (
   answers?: string[],
   skipped?: boolean
 ): Promise<boolean> => {
-  console.log('Updating dream with final analysis...', { dreamId, finalAnalysis });
+  console.log('Updating dream with final analysis...', { 
+    dreamId, 
+    finalAnalysis, 
+    answers, 
+    skipped 
+  });
+
   try {
+    // First, fetch the current dream data
     const { data: currentDream, error: fetchError } = await supabase
       .from('dreams')
       .select('analysis')
       .eq('id', dreamId)
       .single();
 
-    if (fetchError || !currentDream) {
-      console.error('No dream found with id:', dreamId);
+    if (fetchError) {
+      console.error('Error fetching dream:', fetchError);
       return false;
     }
 
-    // Safely type cast the analysis data
-    const analysis = currentDream.analysis as Json;
-    if (!analysis || typeof analysis !== 'object' || Array.isArray(analysis)) {
-      console.error('Invalid analysis data structure');
+    if (!currentDream || !currentDream.analysis) {
+      console.error('No dream or analysis found:', dreamId);
       return false;
     }
 
-    // Verify the analysis object has the required properties
-    const currentAnalysis = analysis as unknown as DreamAnalysis;
-    if (!currentAnalysis.initialAnalysis || !currentAnalysis.questions) {
-      console.error('Analysis data missing required properties');
-      return false;
-    }
+    // Type check and validate the analysis object
+    const currentAnalysis = currentDream.analysis as DreamAnalysis;
+    
+    console.log('Current analysis before update:', currentAnalysis);
 
     const updatedAnalysis: DreamAnalysis = {
-      ...currentAnalysis,
-      finalAnalysis,
+      initialAnalysis: currentAnalysis.initialAnalysis,
+      questions: currentAnalysis.questions,
       answers: answers || [],
+      finalAnalysis: finalAnalysis,
       skipped: skipped || false
     };
 
-    console.log('Updating dream analysis:', updatedAnalysis);
+    console.log('Saving updated analysis:', updatedAnalysis);
 
+    // Update the dream with the new analysis
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
-        analysis: updatedAnalysis as unknown as Json,
+        analysis: updatedAnalysis,
+        updated_at: new Date().toISOString()
       })
       .eq('id', dreamId);
 
     if (updateError) {
-      console.error('Error updating dream:', updateError);
+      console.error('Error updating dream with final analysis:', updateError);
       return false;
     }
-    
-    console.log('Dream updated successfully with final analysis');
+
+    console.log('Successfully saved final analysis to database');
     return true;
   } catch (error) {
-    console.error('Error updating dream:', error);
+    console.error('Error in updateDreamWithFinalAnalysis:', error);
     return false;
   }
 };
