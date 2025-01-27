@@ -31,6 +31,8 @@ const DreamCard = ({ dream, loadingDreamId, handleViewAnalysis }: DreamCardProps
     navigate(`/dream/${dream.id}`);
   };
 
+  console.log('Rendering dream card with analysis:', dream.analysis);
+
   return (
     <Card 
       key={dream.id} 

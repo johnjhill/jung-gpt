@@ -11,6 +11,8 @@ interface DreamAnalysisSectionProps {
 }
 
 export const DreamAnalysisSection = ({ analysis, showFinalAnalysis }: DreamAnalysisSectionProps) => {
+  console.log('Rendering DreamAnalysisSection with:', { analysis, showFinalAnalysis });
+  
   return (
     <div className="bg-white/90 rounded-lg p-8 shadow-lg space-y-8">
       <div className="prose prose-lg max-w-none">

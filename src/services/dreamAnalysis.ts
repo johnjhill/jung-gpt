@@ -17,7 +17,6 @@ export const saveDreamWithInitialAnalysis = async (
 ) => {
   console.log('Saving dream with initial analysis...', { analysis });
   
-  // Convert DreamAnalysis to a plain object that matches the Json type
   const analysisJson = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions
@@ -28,7 +27,7 @@ export const saveDreamWithInitialAnalysis = async (
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysisJson,
+      analysis: analysisJson as Json,
       summary: summary,
       dream_date: new Date().toISOString().split('T')[0]
     })
@@ -57,7 +56,6 @@ export const updateDreamWithFinalAnalysis = async (
   });
 
   try {
-    // First, fetch the current dream data
     const { data: currentDream, error: fetchError } = await supabase
       .from('dreams')
       .select('analysis')
@@ -74,14 +72,7 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
-    const currentAnalysis = currentDream.analysis as {
-      initialAnalysis: string;
-      questions: string[];
-      answers?: string[];
-      finalAnalysis?: string;
-      skipped?: boolean;
-    };
-    
+    const currentAnalysis = currentDream.analysis as DreamAnalysis;
     console.log('Current analysis before update:', currentAnalysis);
 
     const updatedAnalysis = {
@@ -97,7 +88,7 @@ export const updateDreamWithFinalAnalysis = async (
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
-        analysis: updatedAnalysis,
+        analysis: updatedAnalysis as Json,
         updated_at: new Date().toISOString()
       })
       .eq('id', dreamId);
