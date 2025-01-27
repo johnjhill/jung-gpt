@@ -27,7 +27,7 @@ export const saveDreamWithInitialAnalysis = async (
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysisJson as Json,
+      analysis: analysisJson as unknown as Json,
       summary: summary,
       dream_date: new Date().toISOString().split('T')[0]
     })
@@ -88,7 +88,7 @@ export const updateDreamWithFinalAnalysis = async (
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
-        analysis: updatedAnalysis as Json,
+        analysis: updatedAnalysis as unknown as Json,
         updated_at: new Date().toISOString()
       })
       .eq('id', dreamId);
