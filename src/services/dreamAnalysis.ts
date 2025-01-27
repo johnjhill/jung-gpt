@@ -72,7 +72,8 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
-    const currentAnalysis = currentDream.analysis as DreamAnalysis;
+    // Safely cast the analysis data with type assertion
+    const currentAnalysis = currentDream.analysis as unknown as DreamAnalysis;
     console.log('Current analysis before update:', currentAnalysis);
 
     const updatedAnalysis = {
