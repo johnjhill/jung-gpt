@@ -16,7 +16,9 @@ export const saveDreamWithInitialAnalysis = async (
   summary: string
 ) => {
   console.log('Saving dream with initial analysis...');
-  const analysisJson: DreamAnalysis = {
+  
+  // Convert DreamAnalysis to a plain object that matches the Json type
+  const analysisJson: { [key: string]: Json } = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions
   };
@@ -72,14 +74,15 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
-    // Type check and validate the analysis object
-    const currentAnalysis = currentDream.analysis as DreamAnalysis;
+    // Safely cast the analysis data from Json to our expected structure
+    const currentAnalysis = currentDream.analysis as { [key: string]: Json };
     
     console.log('Current analysis before update:', currentAnalysis);
 
-    const updatedAnalysis: DreamAnalysis = {
-      initialAnalysis: currentAnalysis.initialAnalysis,
-      questions: currentAnalysis.questions,
+    // Convert to a plain object that matches the Json type
+    const updatedAnalysis: { [key: string]: Json } = {
+      initialAnalysis: currentAnalysis.initialAnalysis as string,
+      questions: currentAnalysis.questions as string[],
       answers: answers || [],
       finalAnalysis: finalAnalysis,
       skipped: skipped || false
