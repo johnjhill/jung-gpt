@@ -17,7 +17,7 @@ export const saveDreamWithInitialAnalysis = async (
 ) => {
   console.log('Saving dream with initial analysis...', { analysis });
   
-  const analysisJson = {
+  const analysisJson: DreamAnalysis = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions
   };
@@ -72,15 +72,14 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
-    // Safely cast the analysis data with type assertion
     const currentAnalysis = currentDream.analysis as unknown as DreamAnalysis;
     console.log('Current analysis before update:', currentAnalysis);
 
-    const updatedAnalysis = {
+    const updatedAnalysis: DreamAnalysis = {
       initialAnalysis: currentAnalysis.initialAnalysis,
       questions: currentAnalysis.questions,
       answers: answers || [],
-      finalAnalysis,
+      finalAnalysis: finalAnalysis,
       skipped: skipped || false
     };
 

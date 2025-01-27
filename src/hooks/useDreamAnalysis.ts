@@ -57,7 +57,8 @@ export const useDreamAnalysis = () => {
 
       console.log('Generating final analysis with answers...', {
         currentDreamId,
-        answersLength: answers.length
+        answersLength: answers.length,
+        analysis
       });
 
       const response = await generateFinalAnalysis(analysis, answers);
