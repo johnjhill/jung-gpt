@@ -15,10 +15,10 @@ export const saveDreamWithInitialAnalysis = async (
   analysis: { initialAnalysis: string; questions: string[] },
   summary: string
 ) => {
-  console.log('Saving dream with initial analysis...');
+  console.log('Saving dream with initial analysis...', { analysis });
   
   // Convert DreamAnalysis to a plain object that matches the Json type
-  const analysisJson: { [key: string]: Json } = {
+  const analysisJson = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions
   };
@@ -39,7 +39,7 @@ export const saveDreamWithInitialAnalysis = async (
     console.error('Error saving dream:', error);
     throw error;
   }
-  console.log('Dream saved:', data);
+  console.log('Dream saved successfully:', data);
   return data;
 };
 
@@ -69,28 +69,31 @@ export const updateDreamWithFinalAnalysis = async (
       return false;
     }
 
-    if (!currentDream || !currentDream.analysis) {
+    if (!currentDream?.analysis) {
       console.error('No dream or analysis found:', dreamId);
       return false;
     }
 
-    // Safely cast the analysis data from Json to our expected structure
-    const currentAnalysis = currentDream.analysis as { [key: string]: Json };
+    const currentAnalysis = currentDream.analysis as {
+      initialAnalysis: string;
+      questions: string[];
+      answers?: string[];
+      finalAnalysis?: string;
+      skipped?: boolean;
+    };
     
     console.log('Current analysis before update:', currentAnalysis);
 
-    // Convert to a plain object that matches the Json type
-    const updatedAnalysis: { [key: string]: Json } = {
-      initialAnalysis: currentAnalysis.initialAnalysis as string,
-      questions: currentAnalysis.questions as string[],
+    const updatedAnalysis = {
+      initialAnalysis: currentAnalysis.initialAnalysis,
+      questions: currentAnalysis.questions,
       answers: answers || [],
-      finalAnalysis: finalAnalysis,
+      finalAnalysis,
       skipped: skipped || false
     };
 
     console.log('Saving updated analysis:', updatedAnalysis);
 
-    // Update the dream with the new analysis
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
