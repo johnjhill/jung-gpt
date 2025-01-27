@@ -6,7 +6,6 @@ interface DreamAnalysis {
   questions: string[];
   answers?: string[];
   finalAnalysis?: string;
-  skipped?: boolean;
 }
 
 export const saveDreamWithInitialAnalysis = async (
@@ -17,7 +16,7 @@ export const saveDreamWithInitialAnalysis = async (
 ) => {
   console.log('Saving dream with initial analysis...', { analysis });
   
-  const analysisJson: DreamAnalysis = {
+  const analysisData: DreamAnalysis = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions
   };
@@ -27,7 +26,7 @@ export const saveDreamWithInitialAnalysis = async (
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysisJson as unknown as Json,
+      analysis: analysisData as unknown as Json,
       summary: summary,
       dream_date: new Date().toISOString().split('T')[0]
     })
@@ -79,8 +78,7 @@ export const updateDreamWithFinalAnalysis = async (
       initialAnalysis: currentAnalysis.initialAnalysis,
       questions: currentAnalysis.questions,
       answers: answers || [],
-      finalAnalysis: finalAnalysis,
-      skipped: skipped || false
+      finalAnalysis: finalAnalysis
     };
 
     console.log('Saving updated analysis:', updatedAnalysis);
