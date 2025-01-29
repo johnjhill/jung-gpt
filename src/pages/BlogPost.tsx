@@ -44,7 +44,7 @@ const BlogPost = () => {
   if (!blog) {
     return (
       <div className="container max-w-4xl mx-auto py-12 px-4">
-        <h1 className="text-4xl font-serif text-white mb-4">Blog post not found</h1>
+        <h1 className="font-serif text-4xl text-white mb-4">Blog post not found</h1>
       </div>
     );
   }
@@ -67,6 +67,23 @@ const BlogPost = () => {
           <h3 key={index} className="font-serif text-xl text-white/90 mt-6 mb-3">
             {paragraph.slice(2)} {/* Remove the dash and space */}
           </h3>
+        );
+      }
+
+      // Check if it's a numbered list (starts with a number followed by a period)
+      if (/^\d+\./.test(paragraph)) {
+        const items = paragraph.split('\n').filter(item => item.trim());
+        return (
+          <ol key={index} className="list-decimal list-inside space-y-2 font-serif text-lg text-white/80 mb-6 pl-4">
+            {items.map((item, itemIndex) => {
+              const content = item.replace(/^\d+\.\s*/, ''); // Remove the number and period
+              return (
+                <li key={itemIndex} className="leading-relaxed">
+                  {content}
+                </li>
+              );
+            })}
+          </ol>
         );
       }
 
