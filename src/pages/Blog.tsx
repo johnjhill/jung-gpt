@@ -27,7 +27,7 @@ const Blog = () => {
     return (
       <div className="container max-w-4xl mx-auto py-12 px-4">
         <h1 className="text-4xl font-serif text-white mb-8">Dream Symbol Guide</h1>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {[...Array(3)].map((_, i) => (
             <Card key={i} className="bg-white/10 backdrop-blur-md border-white/20">
               <CardHeader>
@@ -47,7 +47,7 @@ const Blog = () => {
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
       <h1 className="text-4xl font-serif text-white mb-8">Dream Symbol Guide</h1>
-      <div className="space-y-4">
+      <div className="space-y-6">
         {blogs?.map((blog) => (
           <Link key={blog.id} to={`/blog/${blog.slug}`}>
             <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20 transition-colors">
