@@ -55,7 +55,7 @@ const BlogPost = () => {
       // Check if the paragraph is a header (ends with a colon)
       if (paragraph.endsWith(':')) {
         return (
-          <h2 key={index} className="font-serif text-2xl text-white mt-8 mb-4">
+          <h2 key={index} className="font-serif text-2xl text-white mt-12 mb-6">
             {paragraph.slice(0, -1)} {/* Remove the colon */}
           </h2>
         );
@@ -64,7 +64,7 @@ const BlogPost = () => {
       // Check if it's a subheading (starts with a dash)
       if (paragraph.startsWith('- ')) {
         return (
-          <h3 key={index} className="font-serif text-xl text-white/90 mt-6 mb-3">
+          <h3 key={index} className="font-serif text-xl text-white/90 mt-8 mb-4">
             {paragraph.slice(2)} {/* Remove the dash and space */}
           </h3>
         );
@@ -74,7 +74,7 @@ const BlogPost = () => {
       if (/^\d+\./.test(paragraph)) {
         const items = paragraph.split('\n').filter(item => item.trim());
         return (
-          <ol key={index} className="list-decimal list-inside space-y-2 font-serif text-lg text-white/80 mb-6 pl-4">
+          <ol key={index} className="list-decimal list-inside space-y-3 font-serif text-lg text-white/80 mb-8 pl-6">
             {items.map((item, itemIndex) => {
               const content = item.replace(/^\d+\.\s*/, ''); // Remove the number and period
               return (
@@ -89,7 +89,7 @@ const BlogPost = () => {
 
       // Regular paragraph
       return (
-        <p key={index} className="font-serif text-lg text-white/80 mb-6 leading-relaxed">
+        <p key={index} className="font-serif text-lg text-white/80 mb-8 leading-relaxed">
           {paragraph}
         </p>
       );
@@ -97,11 +97,11 @@ const BlogPost = () => {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto py-12 px-4">
+    <div className="container max-w-4xl mx-auto py-16 px-4">
       <article className="prose prose-invert mx-auto">
-        <h1 className="font-serif text-4xl mb-6 text-white">{blog.title}</h1>
-        <div className="font-serif text-xl mb-12 text-white/70">{blog.excerpt}</div>
-        <div className="space-y-2">
+        <h1 className="font-serif text-4xl mb-8 text-white">{blog.title}</h1>
+        <div className="font-serif text-xl mb-16 text-white/70">{blog.excerpt}</div>
+        <div className="space-y-4">
           {formatContent(blog.content)}
         </div>
       </article>
