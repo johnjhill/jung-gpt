@@ -42,10 +42,7 @@ export const updateDreamWithFinalAnalysis = async (
   dreamId: string,
   updatedAnalysis: DreamAnalysis
 ): Promise<boolean> => {
-  console.log('Updating dream with analysis...', { 
-    dreamId, 
-    updatedAnalysis 
-  });
+  console.log('Updating dream with final analysis...', { dreamId, updatedAnalysis });
 
   try {
     // Convert DreamAnalysis to Json type
@@ -56,6 +53,8 @@ export const updateDreamWithFinalAnalysis = async (
       finalAnalysis: updatedAnalysis.finalAnalysis || null
     };
 
+    console.log('Sending update to database with analysis:', analysisJson);
+    
     const { error: updateError } = await supabase
       .from('dreams')
       .update({

@@ -17,9 +17,9 @@ export const useFinalAnalysis = (
     answers: string[]
   ) => {
     try {
-      console.log('Generating final analysis with answers...', { answers });
+      console.log('Starting final analysis generation with answers:', { answers });
       const response = await generateFinalAnalysis(analysis, answers);
-      console.log('Final analysis generated:', response);
+      console.log('Final analysis response:', response);
 
       // Create a properly structured analysis object
       const updatedAnalysis: DreamAnalysis = {
@@ -29,7 +29,7 @@ export const useFinalAnalysis = (
         finalAnalysis: response.finalAnalysis
       };
       
-      console.log('Saving updated analysis:', updatedAnalysis);
+      console.log('Attempting to save updated analysis:', updatedAnalysis);
       const success = await updateDreamWithFinalAnalysis(currentDreamId, updatedAnalysis);
       
       if (!success) {
@@ -37,13 +37,15 @@ export const useFinalAnalysis = (
       }
       
       console.log('Dream updated successfully with final analysis');
+      
+      // Invalidate both queries to ensure UI updates
       await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       await queryClient.invalidateQueries({ queryKey: ['dream', currentDreamId] });
       
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
     } catch (error) {
-      console.error('Error generating final analysis:', error);
+      console.error('Error in handleAnswerSubmit:', error);
       toast({
         title: "Error",
         description: "Failed to generate final analysis. Please try again.",
@@ -57,9 +59,9 @@ export const useFinalAnalysis = (
     analysis: DreamAnalysis
   ) => {
     try {
-      console.log('Generating final analysis with skip option...');
+      console.log('Starting final analysis generation (skip mode)');
       const response = await generateFinalAnalysis(analysis, undefined, true);
-      console.log('Final analysis generated (skipped):', response);
+      console.log('Final analysis response (skip mode):', response);
       
       // Create a properly structured analysis object for skipped analysis
       const updatedAnalysis: DreamAnalysis = {
@@ -68,7 +70,7 @@ export const useFinalAnalysis = (
         finalAnalysis: response.finalAnalysis
       };
       
-      console.log('Saving skipped analysis:', updatedAnalysis);
+      console.log('Attempting to save skipped analysis:', updatedAnalysis);
       const success = await updateDreamWithFinalAnalysis(currentDreamId, updatedAnalysis);
       
       if (!success) {
@@ -76,13 +78,15 @@ export const useFinalAnalysis = (
       }
       
       console.log('Dream updated successfully with skipped final analysis');
+      
+      // Invalidate both queries to ensure UI updates
       await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       await queryClient.invalidateQueries({ queryKey: ['dream', currentDreamId] });
       
       setFinalAnalysis(response.finalAnalysis);
       setStep(3);
     } catch (error) {
-      console.error('Error generating final analysis:', error);
+      console.error('Error in handleSkip:', error);
       toast({
         title: "Error",
         description: "Failed to generate final analysis. Please try again.",
