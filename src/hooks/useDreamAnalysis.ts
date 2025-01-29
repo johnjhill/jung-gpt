@@ -12,9 +12,16 @@ import {
   updateDreamWithFinalAnalysis 
 } from '@/services/dreamAnalysis';
 
+interface DreamAnalysis {
+  initialAnalysis: string;
+  questions: string[];
+  answers?: string[];
+  finalAnalysis?: string;
+}
+
 export const useDreamAnalysis = () => {
   const [step, setStep] = useState(1);
-  const [analysis, setAnalysis] = useState<{ initialAnalysis: string; questions: string[] } | null>(null);
+  const [analysis, setAnalysis] = useState<DreamAnalysis | null>(null);
   const [finalAnalysis, setFinalAnalysis] = useState<string | null>(null);
   const [currentDreamId, setCurrentDreamId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -29,7 +36,12 @@ export const useDreamAnalysis = () => {
       const summary = await generateDreamSummary(dream);
       const analysisResponse = await analyzeDreamContent(dream);
       
-      const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, analysisResponse, summary);
+      const initialAnalysis: DreamAnalysis = {
+        initialAnalysis: analysisResponse.initialAnalysis,
+        questions: analysisResponse.questions
+      };
+      
+      const dreamRecord = await saveDreamWithInitialAnalysis(dream, user.id, initialAnalysis, summary);
       if (!dreamRecord) throw new Error('Failed to save dream');
       
       console.log('Dream saved successfully:', dreamRecord.id);
@@ -37,7 +49,7 @@ export const useDreamAnalysis = () => {
       await queryClient.invalidateQueries({ queryKey: ['dreamUsage'] });
       
       setCurrentDreamId(dreamRecord.id);
-      setAnalysis(analysisResponse);
+      setAnalysis(initialAnalysis);
       setStep(2);
     } catch (error) {
       console.error('Error analyzing dream:', error);
@@ -55,24 +67,20 @@ export const useDreamAnalysis = () => {
         throw new Error('Missing required data for final analysis');
       }
 
-      console.log('Generating final analysis with answers...', {
-        currentDreamId,
-        answersLength: answers.length,
-        analysis
-      });
-
+      console.log('Generating final analysis with answers...', { answers });
       const response = await generateFinalAnalysis(analysis, answers);
       console.log('Final analysis generated:', response);
 
-      // Update the dream record with both answers and final analysis
-      const updatedAnalysis = {
+      const updatedAnalysis: DreamAnalysis = {
         initialAnalysis: analysis.initialAnalysis,
         questions: analysis.questions,
         answers: answers,
         finalAnalysis: response.finalAnalysis
       };
       
+      console.log('Saving updated analysis:', updatedAnalysis);
       const success = await updateDreamWithFinalAnalysis(currentDreamId, updatedAnalysis);
+      
       if (!success) {
         throw new Error('Failed to update dream with final analysis');
       }
@@ -102,14 +110,15 @@ export const useDreamAnalysis = () => {
       const response = await generateFinalAnalysis(analysis, undefined, true);
       console.log('Final analysis generated (skipped):', response);
       
-      // Update with skipped analysis
-      const updatedAnalysis = {
+      const updatedAnalysis: DreamAnalysis = {
         initialAnalysis: analysis.initialAnalysis,
         questions: analysis.questions,
         finalAnalysis: response.finalAnalysis
       };
       
+      console.log('Saving skipped analysis:', updatedAnalysis);
       const success = await updateDreamWithFinalAnalysis(currentDreamId, updatedAnalysis);
+      
       if (!success) {
         throw new Error('Failed to update dream with final analysis');
       }

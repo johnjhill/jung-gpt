@@ -11,22 +11,17 @@ interface DreamAnalysis {
 export const saveDreamWithInitialAnalysis = async (
   dreamContent: string,
   userId: string,
-  analysis: { initialAnalysis: string; questions: string[] },
+  analysis: DreamAnalysis,
   summary: string
 ) => {
   console.log('Saving dream with initial analysis...', { analysis });
-  
-  const analysisData: DreamAnalysis = {
-    initialAnalysis: analysis.initialAnalysis,
-    questions: analysis.questions
-  };
 
   const { data, error } = await supabase
     .from('dreams')
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysisData as unknown as Json,
+      analysis: analysis as unknown as Json,
       summary: summary,
       dream_date: new Date().toISOString().split('T')[0]
     })
