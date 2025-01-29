@@ -70,6 +70,20 @@ const BlogPost = () => {
         );
       }
 
+      // Check if it's a bulleted list (multiple lines starting with -)
+      if (paragraph.split('\n').every(line => line.trim().startsWith('-'))) {
+        const items = paragraph.split('\n').filter(item => item.trim());
+        return (
+          <ul key={index} className="list-disc list-inside space-y-3 font-serif text-lg text-white/80 mb-8 pl-6">
+            {items.map((item, itemIndex) => (
+              <li key={itemIndex} className="leading-relaxed">
+                {item.slice(1).trim()} {/* Remove the dash */}
+              </li>
+            ))}
+          </ul>
+        );
+      }
+
       // Check if it's a numbered list (starts with a number followed by a period)
       if (/^\d+\./.test(paragraph)) {
         const items = paragraph.split('\n').filter(item => item.trim());
