@@ -21,7 +21,6 @@ export const useFinalAnalysis = (
       const response = await generateFinalAnalysis(analysis, answers);
       console.log('Final analysis response:', response);
 
-      // Create a properly structured analysis object
       const updatedAnalysis: DreamAnalysis = {
         initialAnalysis: analysis.initialAnalysis,
         questions: analysis.questions,
@@ -38,7 +37,6 @@ export const useFinalAnalysis = (
       
       console.log('Dream updated successfully with final analysis');
       
-      // Invalidate both queries to ensure UI updates
       await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       await queryClient.invalidateQueries({ queryKey: ['dream', currentDreamId] });
       
@@ -63,7 +61,6 @@ export const useFinalAnalysis = (
       const response = await generateFinalAnalysis(analysis, undefined, true);
       console.log('Final analysis response (skip mode):', response);
       
-      // Create a properly structured analysis object for skipped analysis
       const updatedAnalysis: DreamAnalysis = {
         initialAnalysis: analysis.initialAnalysis,
         questions: analysis.questions,
@@ -79,7 +76,6 @@ export const useFinalAnalysis = (
       
       console.log('Dream updated successfully with skipped final analysis');
       
-      // Invalidate both queries to ensure UI updates
       await queryClient.invalidateQueries({ queryKey: ['dreams'] });
       await queryClient.invalidateQueries({ queryKey: ['dream', currentDreamId] });
       

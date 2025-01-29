@@ -10,7 +10,6 @@ export const saveDreamWithInitialAnalysis = async (
 ) => {
   console.log('Saving dream with initial analysis...', { analysis });
 
-  // Convert DreamAnalysis to Json type
   const analysisJson: Json = {
     initialAnalysis: analysis.initialAnalysis,
     questions: analysis.questions,
@@ -45,12 +44,11 @@ export const updateDreamWithFinalAnalysis = async (
   console.log('Updating dream with final analysis...', { dreamId, updatedAnalysis });
 
   try {
-    // Convert DreamAnalysis to Json type
     const analysisJson: Json = {
       initialAnalysis: updatedAnalysis.initialAnalysis,
       questions: updatedAnalysis.questions,
       answers: updatedAnalysis.answers || null,
-      finalAnalysis: updatedAnalysis.finalAnalysis || null
+      finalAnalysis: updatedAnalysis.finalAnalysis
     };
 
     console.log('Sending update to database with analysis:', analysisJson);
