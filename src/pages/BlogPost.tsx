@@ -55,7 +55,7 @@ const BlogPost = () => {
       // Check if the paragraph is a header (ends with a colon)
       if (paragraph.endsWith(':')) {
         return (
-          <h2 key={index} className="text-2xl font-serif text-white mt-8 mb-4">
+          <h2 key={index} className="font-serif text-2xl text-white mt-8 mb-4">
             {paragraph.slice(0, -1)} {/* Remove the colon */}
           </h2>
         );
@@ -64,7 +64,7 @@ const BlogPost = () => {
       // Check if it's a subheading (starts with a dash)
       if (paragraph.startsWith('- ')) {
         return (
-          <h3 key={index} className="text-xl font-serif text-white/90 mt-6 mb-3">
+          <h3 key={index} className="font-serif text-xl text-white/90 mt-6 mb-3">
             {paragraph.slice(2)} {/* Remove the dash and space */}
           </h3>
         );
@@ -72,7 +72,7 @@ const BlogPost = () => {
 
       // Regular paragraph
       return (
-        <p key={index} className="text-white/80 mb-4 leading-relaxed">
+        <p key={index} className="font-serif text-lg text-white/80 mb-6 leading-relaxed">
           {paragraph}
         </p>
       );
@@ -81,9 +81,9 @@ const BlogPost = () => {
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
-      <article className="prose prose-invert prose-lg mx-auto">
-        <h1 className="text-4xl font-serif mb-6 text-white">{blog.title}</h1>
-        <div className="text-white/70 text-xl mb-12 font-serif">{blog.excerpt}</div>
+      <article className="prose prose-invert mx-auto">
+        <h1 className="font-serif text-4xl mb-6 text-white">{blog.title}</h1>
+        <div className="font-serif text-xl mb-12 text-white/70">{blog.excerpt}</div>
         <div className="space-y-2">
           {formatContent(blog.content)}
         </div>
