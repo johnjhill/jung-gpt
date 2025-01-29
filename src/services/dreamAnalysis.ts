@@ -43,46 +43,14 @@ export const saveDreamWithInitialAnalysis = async (
 
 export const updateDreamWithFinalAnalysis = async (
   dreamId: string,
-  finalAnalysis: string,
-  answers?: string[],
-  skipped?: boolean
+  updatedAnalysis: DreamAnalysis
 ): Promise<boolean> => {
-  console.log('Updating dream with final analysis...', { 
+  console.log('Updating dream with analysis...', { 
     dreamId, 
-    finalAnalysis, 
-    answers, 
-    skipped 
+    updatedAnalysis 
   });
 
   try {
-    const { data: currentDream, error: fetchError } = await supabase
-      .from('dreams')
-      .select('analysis')
-      .eq('id', dreamId)
-      .single();
-
-    if (fetchError) {
-      console.error('Error fetching dream:', fetchError);
-      return false;
-    }
-
-    if (!currentDream?.analysis) {
-      console.error('No dream or analysis found:', dreamId);
-      return false;
-    }
-
-    const currentAnalysis = currentDream.analysis as unknown as DreamAnalysis;
-    console.log('Current analysis before update:', currentAnalysis);
-
-    const updatedAnalysis: DreamAnalysis = {
-      initialAnalysis: currentAnalysis.initialAnalysis,
-      questions: currentAnalysis.questions,
-      answers: answers || [],
-      finalAnalysis: finalAnalysis
-    };
-
-    console.log('Saving updated analysis:', updatedAnalysis);
-
     const { error: updateError } = await supabase
       .from('dreams')
       .update({

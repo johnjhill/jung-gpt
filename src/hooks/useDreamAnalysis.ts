@@ -63,8 +63,16 @@ export const useDreamAnalysis = () => {
 
       const response = await generateFinalAnalysis(analysis, answers);
       console.log('Final analysis generated:', response);
+
+      // Update the dream record with both answers and final analysis
+      const updatedAnalysis = {
+        initialAnalysis: analysis.initialAnalysis,
+        questions: analysis.questions,
+        answers: answers,
+        finalAnalysis: response.finalAnalysis
+      };
       
-      const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, answers);
+      const success = await updateDreamWithFinalAnalysis(currentDreamId, updatedAnalysis);
       if (!success) {
         throw new Error('Failed to update dream with final analysis');
       }
@@ -94,7 +102,14 @@ export const useDreamAnalysis = () => {
       const response = await generateFinalAnalysis(analysis, undefined, true);
       console.log('Final analysis generated (skipped):', response);
       
-      const success = await updateDreamWithFinalAnalysis(currentDreamId, response.finalAnalysis, undefined, true);
+      // Update with skipped analysis
+      const updatedAnalysis = {
+        initialAnalysis: analysis.initialAnalysis,
+        questions: analysis.questions,
+        finalAnalysis: response.finalAnalysis
+      };
+      
+      const success = await updateDreamWithFinalAnalysis(currentDreamId, updatedAnalysis);
       if (!success) {
         throw new Error('Failed to update dream with final analysis');
       }
