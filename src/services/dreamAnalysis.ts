@@ -1,12 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-
-interface DreamAnalysis {
-  initialAnalysis: string;
-  questions: string[];
-  answers?: string[];
-  finalAnalysis?: string;
-}
+import { DreamAnalysis } from "@/types/dreams";
 
 export const saveDreamWithInitialAnalysis = async (
   dreamContent: string,
@@ -21,7 +15,7 @@ export const saveDreamWithInitialAnalysis = async (
     .insert({
       user_id: userId,
       dream_content: dreamContent,
-      analysis: analysis as unknown as Json,
+      analysis: analysis as Json,
       summary: summary,
       dream_date: new Date().toISOString().split('T')[0]
     })
@@ -46,10 +40,18 @@ export const updateDreamWithFinalAnalysis = async (
   });
 
   try {
+    // Ensure the analysis object is properly structured before saving
+    const analysisToSave: Json = {
+      initialAnalysis: updatedAnalysis.initialAnalysis,
+      questions: updatedAnalysis.questions,
+      answers: updatedAnalysis.answers || null,
+      finalAnalysis: updatedAnalysis.finalAnalysis || null
+    };
+
     const { error: updateError } = await supabase
       .from('dreams')
       .update({
-        analysis: updatedAnalysis as unknown as Json,
+        analysis: analysisToSave,
         updated_at: new Date().toISOString()
       })
       .eq('id', dreamId);
