@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const FREE_TIER_LIMIT = 20;
+export const FREE_TIER_LIMIT = 100;
 
 export const useDreamUsage = () => {
   return useQuery({
