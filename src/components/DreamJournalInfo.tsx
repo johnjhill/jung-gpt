@@ -32,6 +32,35 @@ export const DreamJournalInfo = () => {
             </ol>
           </AccordionContent>
         </AccordionItem>
+
+        <AccordionItem value="tiers">
+          <AccordionTrigger className="text-lg font-medium">Free vs Premium Features</AccordionTrigger>
+          <AccordionContent className="text-gray-600 leading-relaxed">
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Free Tier Features:</h4>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Limited monthly dream analyses</li>
+                  <li>Basic dream journaling</li>
+                  <li>Initial AI interpretation</li>
+                  <li>Access to dream symbol library</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2">Premium Features:</h4>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Unlimited dream analyses</li>
+                  <li>Advanced pattern recognition</li>
+                  <li>Detailed follow-up questions</li>
+                  <li>Comprehensive final analysis</li>
+                  <li>Personal dream trends insights</li>
+                  <li>Priority support</li>
+                </ul>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
     </Card>
   );
