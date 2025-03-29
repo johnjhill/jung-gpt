@@ -79,7 +79,7 @@ export const AuthForm = () => (
           },
         }}
         theme="default"
-        providers={['google', 'email']}
+        providers={['google']}
         localization={{
           variables: {
             sign_up: {
