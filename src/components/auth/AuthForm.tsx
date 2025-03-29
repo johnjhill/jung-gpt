@@ -80,7 +80,7 @@ export const AuthForm = () => (
         }}
         theme="default"
         providers={['google']}
-        redirectTo={window.location.origin}
+        redirectTo={`${window.location.origin}`}
         localization={{
           variables: {
             sign_up: {
