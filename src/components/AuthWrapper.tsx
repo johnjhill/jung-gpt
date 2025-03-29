@@ -15,16 +15,33 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log('Auth wrapper mounted');
     
-    // Handle hash fragment for OAuth redirects
-    if (location.hash && (location.hash.includes('access_token') || location.hash.includes('error'))) {
-      console.log('Detected hash in URL, processing OAuth result');
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      if (hashParams.get('error')) {
-        console.error('OAuth error:', hashParams.get('error_description'));
+    // Process any OAuth fragment identifiers immediately
+    const processHashParams = async () => {
+      if (location.hash && location.hash.includes('access_token')) {
+        console.log('Detected access token in URL, manually handling...');
+        try {
+          // Force a getSession call to ensure Supabase processes the hash
+          const { data, error } = await supabase.auth.getSession();
+          if (error) {
+            console.error('Error processing OAuth redirect:', error);
+          } else if (data?.session) {
+            console.log('Successfully retrieved session from OAuth redirect:', data.session.user.id);
+            setSession(data.session);
+            // Clean the URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // Navigate to home page
+            navigate('/', { replace: true });
+          }
+        } catch (err) {
+          console.error('Failed to process hash fragment:', err);
+        }
       }
-    }
+    };
+    
+    // Process hash immediately
+    processHashParams();
 
-    // Set up auth state listener FIRST to avoid missing auth events
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
       console.log('Auth state changed:', event, currentSession?.user?.id);
       
@@ -40,32 +57,37 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    // THEN check for existing session
-    const initSession = async () => {
-      try {
-        console.log('Checking initial session...');
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
+    // Check for existing session (but only if we don't have hash params)
+    if (!location.hash) {
+      const initSession = async () => {
+        try {
+          console.log('Checking initial session...');
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('Error getting session:', error);
+            setLoading(false);
+            return;
+          }
+  
+          if (data.session) {
+            console.log('Initial session found:', data.session.user.id);
+            setSession(data.session);
+          } else {
+            console.log('No initial session found');
+          }
+        } catch (error) {
+          console.error('Error in session check:', error);
+        } finally {
           setLoading(false);
-          return;
         }
-
-        if (data.session) {
-          console.log('Initial session found:', data.session.user.id);
-          setSession(data.session);
-        } else {
-          console.log('No initial session found');
-        }
-      } catch (error) {
-        console.error('Error in session check:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initSession();
+      };
+  
+      initSession();
+    } else {
+      // If we have hash params, don't need to check initial session
+      setLoading(false);
+    }
 
     return () => {
       console.log('Cleaning up auth subscription');
