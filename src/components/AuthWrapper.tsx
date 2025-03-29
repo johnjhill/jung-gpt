@@ -15,31 +15,36 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log('Auth wrapper mounted');
     
-    // Process any OAuth fragment identifiers immediately
-    const processHashParams = async () => {
-      if (location.hash && location.hash.includes('access_token')) {
-        console.log('Detected access token in URL, manually handling...');
+    // Process any OAuth redirect immediately
+    const processAuthRedirect = async () => {
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        console.log('Detected auth redirect with access token');
         try {
-          // Force a getSession call to ensure Supabase processes the hash
           const { data, error } = await supabase.auth.getSession();
+          
           if (error) {
-            console.error('Error processing OAuth redirect:', error);
+            console.error('Error processing auth redirect:', error);
           } else if (data?.session) {
-            console.log('Successfully retrieved session from OAuth redirect:', data.session.user.id);
+            console.log('Session retrieved successfully:', data.session.user.id);
             setSession(data.session);
-            // Clean the URL
+            
+            // Clean the URL by removing the hash
             window.history.replaceState({}, document.title, window.location.pathname);
-            // Navigate to home page
-            navigate('/', { replace: true });
+            
+            // Navigate to home
+            setTimeout(() => {
+              navigate('/', { replace: true });
+            }, 0);
           }
         } catch (err) {
-          console.error('Failed to process hash fragment:', err);
+          console.error('Failed to process auth redirect:', err);
+        } finally {
+          setLoading(false);
         }
+        return true;
       }
+      return false;
     };
-    
-    // Process hash immediately
-    processHashParams();
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
@@ -57,37 +62,33 @@ export const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    // Check for existing session (but only if we don't have hash params)
-    if (!location.hash) {
-      const initSession = async () => {
-        try {
-          console.log('Checking initial session...');
-          const { data, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            console.error('Error getting session:', error);
+    // First check if there's a redirect to process, then check session
+    processAuthRedirect().then(wasRedirect => {
+      if (!wasRedirect) {
+        // Only check for existing session if not handling redirect
+        const initSession = async () => {
+          try {
+            console.log('Checking initial session...');
+            const { data, error } = await supabase.auth.getSession();
+            
+            if (error) {
+              console.error('Error getting session:', error);
+            } else if (data.session) {
+              console.log('Initial session found:', data.session.user.id);
+              setSession(data.session);
+            } else {
+              console.log('No initial session found');
+            }
+          } catch (error) {
+            console.error('Error in session check:', error);
+          } finally {
             setLoading(false);
-            return;
           }
-  
-          if (data.session) {
-            console.log('Initial session found:', data.session.user.id);
-            setSession(data.session);
-          } else {
-            console.log('No initial session found');
-          }
-        } catch (error) {
-          console.error('Error in session check:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-      initSession();
-    } else {
-      // If we have hash params, don't need to check initial session
-      setLoading(false);
-    }
+        };
+        
+        initSession();
+      }
+    });
 
     return () => {
       console.log('Cleaning up auth subscription');
