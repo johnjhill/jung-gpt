@@ -1,7 +1,8 @@
+
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { History, Bell, LogOut, User, BookOpen } from "lucide-react";
+import { History, Bell, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -64,18 +65,6 @@ const NavigationBar = () => {
         <div className="flex items-center gap-6">
           <NavigationMenu>
             <NavigationMenuList>
-              <NavigationMenuItem>
-                <Link to="/blog">
-                  <NavigationMenuLink 
-                    className={cn(
-                      "group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 focus:bg-white/10 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-white/10 data-[state=open]:bg-white/10"
-                    )}
-                  >
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Dream Symbols
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
               {userEmail && (
                 <>
                   <NavigationMenuItem>

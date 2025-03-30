@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,8 +10,6 @@ import Index from "./pages/Index";
 import DreamHistory from "./pages/DreamHistory";
 import DreamDetail from "./pages/DreamDetail";
 import Preferences from "./pages/Preferences";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -29,8 +28,6 @@ const App = () => (
               <Route path="/history" element={<DreamHistory />} />
               <Route path="/dream/:id" element={<DreamDetail />} />
               <Route path="/preferences" element={<Preferences />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
             </Routes>
           </div>
         </AuthWrapper>
